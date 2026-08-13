@@ -11,12 +11,14 @@ class SettingsScreen extends StatefulWidget {
   final SettingsRepository settingsRepository;
   final EventRepository eventRepository;
   final ValueChanged<AppSettings> onSettingsChanged;
+  final VoidCallback? onReplayOnboarding;
 
   const SettingsScreen({
     super.key,
     required this.settingsRepository,
     required this.eventRepository,
     required this.onSettingsChanged,
+    this.onReplayOnboarding,
   });
 
   @override
@@ -131,6 +133,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const PaywallScreen()),
             ),
+          ),
+          const Divider(),
+          const _SectionHeader('도움말'),
+          ListTile(
+            title: const Text('사용법 다시 보기'),
+            subtitle: const Text('홈 화면 주요 기능을 안내하는 화면을 다시 표시합니다'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: widget.onReplayOnboarding == null
+                ? null
+                : () {
+                    Navigator.of(context).pop();
+                    widget.onReplayOnboarding!();
+                  },
           ),
           const Divider(),
           const _SectionHeader('앱 정보'),

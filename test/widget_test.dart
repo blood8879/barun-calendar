@@ -4,9 +4,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:barun_calendar/data/event/event_repository.dart';
 import 'package:barun_calendar/data/fake/fake_calendar_data_sources.dart';
+import 'package:barun_calendar/data/onboarding/onboarding_repository.dart';
 import 'package:barun_calendar/data/settings/settings_repository.dart';
 import 'package:barun_calendar/domain/calendar/day_info.dart';
 import 'package:barun_calendar/ui/home/home_screen.dart';
+
+class _AlreadyCompletedOnboardingRepository implements OnboardingRepository {
+  const _AlreadyCompletedOnboardingRepository();
+
+  @override
+  Future<bool> isCompleted() async => true;
+
+  @override
+  Future<void> setCompleted(bool completed) async {}
+}
 
 void main() {
   setUp(() {
@@ -23,6 +34,10 @@ void main() {
           holiday: FakeHolidayDataSource(),
         ),
         lunarSource: const FakeLunarCalendarDataSource(),
+        // 온보딩 코치마크 오버레이는 별도 테스트(onboarding_coach_mark_test.dart)에서
+        // 검증한다. 여기서는 기존 화면 상호작용 테스트가 오버레이에 가려지지 않도록
+        // 완료 상태를 주입한다.
+        onboardingRepository: const _AlreadyCompletedOnboardingRepository(),
       );
 
   testWidgets('홈 화면이 월 달력과 오늘 날짜를 렌더링한다', (WidgetTester tester) async {

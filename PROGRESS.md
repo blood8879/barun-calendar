@@ -466,3 +466,24 @@ Play 스토어 프로덕션 등재를 위해 필요한 산출물을 준비했다
 
 QA: HTML 파싱 검증 통과, 이미지 규격(512×512 무알파, 1024×500, 924×540 스크린샷 6장)
 확인, AAB 빌드 성공.
+
+## Phase 16: 최초 실행 온보딩(코치마크) — 2026-08-13
+
+사용자가 "처음 보는 사용자들이 어떻게 사용하는지 알 수 있게 화면 위에 덮이는 스케치 같은 걸로
+안내해달라"고 요청 — 업계에서 "코치마크(coach mark)" 또는 "스포트라이트 온보딩"이라 부르는
+패턴이다.
+
+- `lib/ui/onboarding/coach_mark_overlay.dart`: 외부 패키지 없이 `Overlay` + `CustomPainter`
+  (Path.combine으로 스포트라이트 구멍을 뚫는 방식)로 직접 구현. 단계별 말풍선 + 다음/건너뛰기/
+  시작하기 버튼.
+- `lib/data/onboarding/onboarding_repository.dart`: SharedPreferences 기반 완료 여부 저장
+  (기존 `SharedPrefsSettingsRepository` 패턴과 동일 구조).
+- 최초 실행 시 홈 화면 진입 직후 5단계(월 이동 → 날짜 셀 → 기일/생신 → 검색 → 설정)를 순서대로
+  강조. 완료/건너뛰기 시 완료 플래그 저장, 이후 재실행되지 않음.
+- 설정 화면 "도움말" 섹션에 "사용법 다시 보기" 메뉴 추가 — 완료 플래그와 무관하게 강제 재실행.
+- 다크모드/글자배율 등 기존 테마 체계를 그대로 따름(별도 스타일 하드코딩 없음).
+- `test/ui/onboarding_coach_mark_test.dart` 4건 추가: 최초 표시, 완주 후 미표시, 건너뛰기,
+  설정에서 재실행.
+- QA: `flutter analyze` 오류 0(기존 info 2건만), `flutter test` **60/60 통과**,
+  `flutter build apk --release` 빌드 성공. 실기기(Galaxy, Android 13) 재설치 후 크래시 0건,
+  온보딩 코치마크 정상 표시 확인(Phase 15의 R8/WorkManager 크래시 수정이 유지됨을 재확인).

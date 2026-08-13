@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/event/event_photo_store.dart';
 import '../../data/event/event_repository.dart';
 import '../../data/notification/notification_service.dart';
+import '../../data/onboarding/onboarding_repository.dart';
 import '../../data/settings/settings_repository.dart';
 import '../../domain/calendar/day_info.dart';
 import '../../domain/calendar/jdn.dart';
@@ -13,6 +14,7 @@ import '../anniversary/anniversary_screen.dart';
 import '../basis/basis_screen.dart';
 import '../converter/converter_screen.dart';
 import '../date_detail/date_detail_sheet.dart';
+import '../onboarding/coach_mark_overlay.dart';
 import '../search/search_screen.dart';
 import '../settings/settings_screen.dart';
 
@@ -26,6 +28,7 @@ class HomeScreen extends StatefulWidget {
   final LunarCalendarDataSource lunarSource;
   final AppSettings settings;
   final ValueChanged<List<CalendarEvent>>? onEventsChanged;
+  final OnboardingRepository? onboardingRepository;
 
   const HomeScreen({
     super.key,
@@ -36,6 +39,7 @@ class HomeScreen extends StatefulWidget {
     required this.lunarSource,
     this.settings = const AppSettings(),
     this.onEventsChanged,
+    this.onboardingRepository,
   });
 
   @override
@@ -45,6 +49,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DayInfoProvider get _dayInfoProvider => widget.dayInfoProvider;
   final _uuid = const Uuid();
+  late final OnboardingRepository _onboardingRepository =
+      widget.onboardingRepository ?? SharedPrefsOnboardingRepository();
+
+  final _monthTitleKey = GlobalKey();
+  final _calendarGridKey = GlobalKey();
+  final _anniversaryIconKey = GlobalKey();
+  final _searchIconKey = GlobalKey();
+  final _settingsIconKey = GlobalKey();
 
   late DateTime _visibleMonth;
   List<CalendarEvent> _events = [];
@@ -57,6 +69,34 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     _visibleMonth = DateTime(now.year, now.month, 1);
     _loadEvents();
+    _maybeShowOnboarding();
+  }
+
+  Future<void> _maybeShowOnboarding() async {
+    final completed = await _onboardingRepository.isCompleted();
+    if (completed || !mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _startOnboarding(markCompleteOnFinish: true);
+    });
+  }
+
+  void _startOnboarding({bool markCompleteOnFinish = false}) {
+    showCoachMarks(
+      context,
+      steps: [
+        CoachMarkStep(targetKey: _monthTitleKey, message: '좌우로 눌러서 달을 이동해요. 화살표를 탭하거나 좌우로 스와이프할 수 있어요.'),
+        CoachMarkStep(targetKey: _calendarGridKey, message: '날짜를 누르면 일정을 등록하고, 일진·절기·공휴일의 근거를 볼 수 있어요.'),
+        CoachMarkStep(targetKey: _anniversaryIconKey, message: '생신·기일을 등록하면 매년 자동으로 정확한 날짜에 알려드려요.'),
+        CoachMarkStep(targetKey: _searchIconKey, message: '등록한 일정을 검색할 수 있어요.'),
+        CoachMarkStep(targetKey: _settingsIconKey, message: '다크 모드, 손없는날 표시 등 화면을 내게 맞게 설정할 수 있어요.'),
+      ],
+      onFinished: () {
+        if (markCompleteOnFinish) {
+          _onboardingRepository.setCompleted(true);
+        }
+      },
+    );
   }
 
   Future<void> _loadEvents() async {
@@ -174,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () => _changeMonth(-1),
             ),
             GestureDetector(
+              key: _monthTitleKey,
               onTap: () => _pickMonth(context),
               child: Text('${_visibleMonth.year}년 ${_visibleMonth.month}월'),
             ),
@@ -196,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           IconButton(
+            key: _anniversaryIconKey,
             icon: const Icon(Icons.cake_outlined),
             tooltip: '기일 · 생신',
             onPressed: () => Navigator.of(context).push(
@@ -208,6 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           IconButton(
+            key: _searchIconKey,
             icon: const Icon(Icons.search),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -216,6 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           IconButton(
+            key: _settingsIconKey,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -223,6 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   settingsRepository: widget.settingsRepository,
                   eventRepository: widget.repository,
                   onSettingsChanged: widget.onSettingsChanged,
+                  onReplayOnboarding: () => _startOnboarding(),
                 ),
               ),
             ),
@@ -251,6 +296,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child: GestureDetector(
+              key: _calendarGridKey,
               behavior: HitTestBehavior.translucent,
               onHorizontalDragEnd: (details) {
                 final velocity = details.primaryVelocity ?? 0;
