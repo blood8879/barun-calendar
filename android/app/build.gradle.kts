@@ -55,6 +55,13 @@ android {
                 // (e.g. fresh checkout without the upload keystore).
                 signingConfigs.getByName("debug")
             }
+            // R8 shrinking strips WorkManager's Room-generated WorkDatabase_Impl
+            // (pulled in transitively by flutter_local_notifications), crashing
+            // the app on launch with "Failed to create an instance of
+            // androidx.work.impl.WorkDatabase". Keep it disabled until proper
+            // keep rules are added.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
