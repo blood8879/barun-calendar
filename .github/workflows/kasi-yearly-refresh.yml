@@ -1,0 +1,85 @@
+name: KASI yearly data refresh
+
+# 24절기/공휴일/잡절 API(SpcdeInfoService)는 KASI 정책상 "현재 시점 기준 가까운 미래"까지만
+# 데이터를 제공한다(OPEN_QUESTIONS.md #1). 이 워크플로우는 매년 초에 최신 제공 범위를 다시
+# 받아와 assets/data/*.json + docs/data/holidays/*.json 을 갱신하고, 변경이 있으면 커밋한다.
+# 자동 push는 하지 않는다 — 항상 PR로 올려 사람이 diff를 확인하고 머지하게 한다.
+
+on:
+  schedule:
+    - cron: "0 1 2 1 *" # 매년 1월 2일 01:00 UTC(한국시간 10:00)
+  workflow_dispatch:
+    inputs:
+      from_year:
+        description: "조회 시작 연도 (비우면 자동 계산: 올해-1)"
+        required: false
+      to_year:
+        description: "조회 종료 연도 (비우면 자동 계산: 올해+5)"
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compute year range
+        id: years
+        run: |
+          THIS_YEAR=$(date +%Y)
+          FROM="${{ github.event.inputs.from_year }}"
+          TO="${{ github.event.inputs.to_year }}"
+          if [ -z "$FROM" ]; then FROM=$((THIS_YEAR - 1)); fi
+          if [ -z "$TO" ]; then TO=$((THIS_YEAR + 5)); fi
+          echo "from=$FROM" >> "$GITHUB_OUTPUT"
+          echo "to=$TO" >> "$GITHUB_OUTPUT"
+
+      # KASI 무료 트래픽 한도(1일 1,000회)를 고려해 필요한 범위만 조회한다.
+      # 서비스키는 절대 워크플로우 파일/로그에 노출되지 않도록 secrets로만 주입한다.
+      - name: Fetch latest KASI data
+        env:
+          KASI_SERVICE_KEY: ${{ secrets.KASI_SERVICE_KEY }}
+        run: |
+          if [ -z "$KASI_SERVICE_KEY" ]; then
+            echo "::error::KASI_SERVICE_KEY secret이 설정되어 있지 않습니다. repo Settings > Secrets and variables > Actions 에 등록하세요."
+            exit 1
+          fi
+          python3 tool/fetch_kasi_data.py --from "${{ steps.years.outputs.from }}" --to "${{ steps.years.outputs.to }}"
+
+      - name: Rebuild derived assets (JSON + docs/ 공휴일 페이지 + 바이너리)
+        run: |
+          python3 tool/build_kasi_assets.py
+          python3 tool/build_binary_tables.py
+
+      - name: Detect changes
+        id: diff
+        run: |
+          git add assets/data docs/data
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open PR with refreshed data
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: refresh KASI data (${{ steps.years.outputs.from }}-${{ steps.years.outputs.to }})"
+          title: "KASI 데이터 자동 갱신 (${{ steps.years.outputs.from }}~${{ steps.years.outputs.to }})"
+          body: |
+            매년 1월 초 자동 실행되는 KASI 데이터 갱신 워크플로우 결과입니다.
+            24절기/공휴일/잡절은 KASI가 새로 제공하기 시작한 연도만큼 범위가 넓어집니다.
+            머지 전 `flutter test`가 통과하는지 CI 결과를 확인하세요.
+          branch: kasi-data-refresh
+          delete-branch: true
+          labels: |
+            data-refresh

@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#0e0f0d;}
+  @keyframes bcSlideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  @keyframes bcFadeIn{from{opacity:0;}to{opacity:1;}}
+  @keyframes bcAxisIn{from{opacity:0;transform:translateX(26px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes bcAxisOut{from{opacity:0;transform:translateX(-26px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes bcRipple{from{opacity:0.5;transform:scale(0.2);}to{opacity:0;transform:scale(1);}}
+  @keyframes bcToastIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes bcShimmer{from{background-position:-220px 0;}to{background-position:220px 0;}}
+  @keyframes bcPulse{0%,100%{opacity:1;}50%{opacity:0.45;}}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  input,select,textarea{font-family:inherit;}
+  a{color:#8fbfa9;text-decoration:none;}
+  a:hover{color:#b8d8c9;}
+  ::-webkit-scrollbar{width:0;height:0;}
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0e0f0d;color:#e7e5df;font-family:'Noto Sans KR',sans-serif;padding:20px 20px 64px;">
+
+  <div style="display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between;max-width:1500px;margin:0 auto 22px;">
+    <div>
+      <div style="font-size:19px;font-weight:700;letter-spacing:-0.01em;">바른달력 — 인터랙티브 목업</div>
+      <div style="font-size:13px;color:#8d8b84;margin-top:5px;">기준 뷰포트 390×812 · 오늘 2026-07-15(수) · 음력·절기·잡절은 실제 값으로 계산</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+      <sc-for list="{{ chromeGroups }}" as="g" hint-placeholder-count="4">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:#77756e;letter-spacing:0.04em;">{{ g.label }}</span>
+          <div style="display:flex;background:#1a1c19;border:1px solid #2b2e29;border-radius:9px;padding:3px;gap:2px;">
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+              <button onClick="{{ it.on }}" style="{{ it.style }}">{{ it.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:30px;justify-content:center;align-items:flex-start;max-width:1500px;margin:0 auto;">
+  <sc-for list="{{ frames }}" as="f" hint-placeholder-count="1">
+    <div style="{{ f.rootStyle }}">
+      <sc-if value="{{ f.hasLabel }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:12px;color:#8d8b84;margin-bottom:9px;letter-spacing:0.02em;">{{ f.label }}</div>
+      </sc-if>
+      <div style="{{ f.shellStyle }}">
+
+        <div style="height:30px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:11px;color:var(--ink2,#5c584f);font-weight:500;">
+          <span>9:41</span><span>바른달력</span><span>▮▮▮</span>
+        </div>
+
+        <sc-if value="{{ f.showHeader }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;display:flex;align-items:center;gap:6px;padding:6px 10px 10px;border-bottom:1px solid var(--line,#e3dfd6);">
+            <button onClick="{{ f.back }}" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:calc(20px * var(--s,1));color:var(--ink,#1b1a17);">←</button>
+            <div style="font-size:calc(18px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ f.title }}</div>
+          </div>
+        </sc-if>
+
+        <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;">
+
+          <!-- ===== S1 홈 ===== -->
+          <sc-if value="{{ f.isS1 }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:4px 10px 0;">
+              <div style="display:flex;align-items:center;gap:2px;">
+                <button onClick="{{ f.prevMonth }}" style="width:44px;height:48px;font-size:calc(19px * var(--s,1));color:var(--ink2,#5c584f);">◀</button>
+                <div style="flex:1;text-align:center;font-size:calc(22px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);line-height:1.2;font-feature-settings:'tnum';">{{ f.monthTitle }}</div>
+                <button onClick="{{ f.nextMonth }}" style="width:44px;height:48px;font-size:calc(19px * var(--s,1));color:var(--ink2,#5c584f);">▶</button>
+              </div>
+              <div style="display:flex;gap:6px;margin:2px 0 8px;">
+                <button onClick="{{ f.goToday }}" style="height:36px;padding:0 14px;border:1px solid var(--line,#e3dfd6);border-radius:9px;font-size:calc(14px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);background:var(--surface,#fff);">오늘</button>
+                <button onClick="{{ f.goSearch }}" style="height:36px;padding:0 14px;border:1px solid var(--line,#e3dfd6);border-radius:9px;font-size:calc(14px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);background:var(--surface,#fff);">검색</button>
+                <div style="flex:1;"></div>
+                <button onClick="{{ f.goSettings }}" style="height:36px;width:40px;border:1px solid var(--line,#e3dfd6);border-radius:9px;font-size:calc(14px * var(--s,1));color:var(--ink,#1b1a17);background:var(--surface,#fff);">☰</button>
+                <button onClick="{{ f.newEvent }}" style="height:36px;padding:0 16px;border-radius:9px;font-size:calc(15px * var(--s,1));font-weight:700;color:#fff;background:var(--accent,#2f5d4f);">＋</button>
+              </div>
+
+              <button onClick="{{ f.goBackup }}" style="{{ f.badgeStyle }}">
+                <span style="font-weight:700;">{{ f.badgeIcon }}</span>
+                <span style="flex:1;text-align:left;">{{ f.badgeText }}</span>
+                <sc-if value="{{ f.badgeAction }}" hint-placeholder-val="{{ false }}"><span style="font-weight:700;text-decoration:underline;">재시도</span></sc-if>
+              </button>
+
+              <sc-if value="{{ f.outOfRange }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:26px 4px;padding:22px 18px;border:1px solid var(--line,#e3dfd6);border-radius:14px;background:var(--surface,#fff);text-align:center;">
+                  <div style="font-size:calc(17px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);line-height:1.5;">제공 범위(1900~2050)를<br>벗어났습니다</div>
+                  <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:10px;line-height:1.6;">음력·절기는 한국천문연구원 확정값만 사용합니다. 추정치를 표시하지 않으므로 이 방향으로는 더 이동할 수 없습니다.</div>
+                  <button onClick="{{ f.goToday }}" style="margin-top:16px;height:46px;padding:0 20px;border-radius:10px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">오늘로 돌아가기</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ f.showGrid }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:8px;">
+                  <sc-for list="{{ f.dows }}" as="d" hint-placeholder-count="7">
+                    <div style="{{ d.style }}">{{ d.label }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line,#e3dfd6);">
+                  <sc-for list="{{ f.cells }}" as="c" hint-placeholder-count="42">
+                    <div onClick="{{ c.tap }}" onContextMenu="{{ c.long }}" style="{{ c.cell }}">
+                      <div style="display:flex;align-items:baseline;gap:3px;">
+                        <span style="{{ c.numStyle }}">{{ c.day }}</span>
+                      </div>
+                      <sc-if value="{{ c.hasLunar }}" hint-placeholder-val="{{ true }}">
+                        <div style="{{ c.lunarStyle }}">{{ c.lunar }}</div>
+                      </sc-if>
+                      <sc-for list="{{ c.badges }}" as="b" hint-placeholder-count="0">
+                        <div style="{{ b.style }}">{{ b.text }}</div>
+                      </sc-for>
+                      <sc-for list="{{ c.bars }}" as="v" hint-placeholder-count="0">
+                        <div style="{{ v.style }}">{{ v.text }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="display:flex;gap:14px;overflow-x:auto;padding:12px 2px 4px;font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);white-space:nowrap;">
+                  <sc-for list="{{ f.monthSpecials }}" as="s" hint-placeholder-count="3">
+                    <span style="{{ s.style }}">{{ s.text }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);text-align:center;padding:10px 6px 6px;line-height:1.5;">모든 달력 기능 무료 · 구독 없음 · 광고 제거는 1회 결제 ₩7,900</div>
+            </div>
+            <div style="height:64px;flex:none;margin:0 10px 12px;border:1px dashed var(--line,#e3dfd6);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px;background:repeating-linear-gradient(135deg,transparent,transparent 7px,rgba(128,128,128,0.07) 7px,rgba(128,128,128,0.07) 14px);">
+              <span style="font-family:'Noto Sans KR',monospace;font-size:11px;letter-spacing:0.06em;color:var(--ink3,#8f8a80);">배너 광고 1지면 · 높이 예약 · 실패 시 접힘</span>
+            </div>
+          </sc-if>
+
+          <!-- ===== S3 근거 ===== -->
+          <sc-if value="{{ f.isS3 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px 30px;">
+              <div style="font-size:calc(21px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">{{ f.r.dateLine }}</div>
+              <div style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);margin-top:7px;line-height:1.6;font-family:'Noto Serif KR',serif;">{{ f.r.subLine }}</div>
+
+              <div style="margin-top:20px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(18px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ f.r.subject }}</span>
+              </div>
+              <div style="font-size:calc(16px * var(--s,1));color:var(--ink,#1b1a17);line-height:1.75;margin-top:12px;">{{ f.r.rule }}</div>
+
+              <div style="margin-top:16px;border:1px solid var(--line,#e3dfd6);border-radius:14px;background:var(--surface,#fff);padding:14px;">
+                <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.6;font-feature-settings:'tnum';">{{ f.r.anchor }}</div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;">
+                  <sc-for list="{{ f.r.steps }}" as="st" hint-placeholder-count="3">
+                    <div style="{{ st.rowStyle }}">
+                      <span style="{{ st.numStyle }}">{{ st.n }}</span>
+                      <span style="{{ st.dateStyle }}">{{ st.date }}</span>
+                      <span style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);font-family:'Noto Serif KR',serif;">{{ st.note }}</span>
+                      <span style="flex:1;"></span>
+                      <sc-if value="{{ st.isToday }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:calc(13px * var(--s,1));font-weight:700;color:var(--accent,#2f5d4f);">← 이 날</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ f.r.hasNote }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.6;margin-top:12px;padding-top:11px;border-top:1px dashed var(--line,#e3dfd6);">{{ f.r.note }}</div>
+                </sc-if>
+              </div>
+
+              <div style="margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--ink3,#8f8a80);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">이 날짜의 출처</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.55;">
+                <div style="display:flex;gap:10px;"><span style="width:calc(84px * var(--s,1));flex:none;color:var(--ink3,#8f8a80);">음력·24절기</span><span>한국천문연구원 확정값 (1900~2050)</span></div>
+                <div style="display:flex;gap:10px;"><span style="width:calc(84px * var(--s,1));flex:none;color:var(--ink3,#8f8a80);">잡절·간지</span><span>위 확정값으로 계산</span></div>
+                <div style="display:flex;gap:10px;"><span style="width:calc(84px * var(--s,1));flex:none;color:var(--ink3,#8f8a80);">데이터 확인</span><span style="font-feature-settings:'tnum';">2026-08-07</span></div>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-top:22px;">
+                <button onClick="{{ f.share }}" style="flex:1;height:50px;border-radius:11px;border:1px solid var(--accent,#2f5d4f);color:var(--accent,#2f5d4f);font-size:calc(15px * var(--s,1));font-weight:700;background:var(--surface,#fff);">근거 공유</button>
+                <button onClick="{{ f.back }}" style="flex:1;height:50px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">닫기</button>
+              </div>
+              <sc-if value="{{ f.shared }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;font-size:calc(13px * var(--s,1));color:var(--accent,#2f5d4f);text-align:center;">근거 요약을 복사했습니다 — 가족 단톡방에 붙여넣을 수 있습니다</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ===== S4 일정 편집 ===== -->
+          <sc-if value="{{ f.isS4 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px 24px;display:flex;flex-direction:column;gap:20px;">
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">제목</div>
+                <input value="{{ f.form.title }}" onChange="{{ f.setTitle }}" placeholder="예: 아버님 기일" style="width:100%;height:52px;padding:0 14px;border:1px solid var(--line,#e3dfd6);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(16px * var(--s,1));">
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">날짜</div>
+                <div style="display:flex;gap:6px;background:var(--surface2,#faf9f6);border:1px solid var(--line,#e3dfd6);border-radius:11px;padding:4px;">
+                  <button onClick="{{ f.form.pickSolar }}" style="{{ f.form.solarTab }}">양력</button>
+                  <button onClick="{{ f.form.pickLunar }}" style="{{ f.form.lunarTab }}">음력</button>
+                </div>
+                <div style="margin-top:10px;padding:14px;border:1px solid var(--line,#e3dfd6);border-radius:11px;background:var(--surface,#fff);">
+                  <div style="font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">{{ f.form.primary }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:9px;">
+                    <span style="font-size:calc(12px * var(--s,1));padding:3px 8px;border-radius:6px;background:var(--accentSoft,#e8efea);color:var(--accent,#2f5d4f);font-weight:700;">즉시 미리보기</span>
+                    <span style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);font-feature-settings:'tnum';">{{ f.form.mirror }}</span>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:12px;">
+                    <sc-for list="{{ f.form.dateChips }}" as="ch" hint-placeholder-count="2">
+                      <button onClick="{{ ch.on }}" style="{{ ch.style }}">{{ ch.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <button onClick="{{ f.form.toggleMulti }}" style="{{ f.form.multiStyle }}"><span>{{ f.form.multiBox }}</span><span>여러 날 (종료일 지정)</span></button>
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">반복</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                  <sc-for list="{{ f.form.repeats }}" as="r" hint-placeholder-count="6">
+                    <button onClick="{{ r.on }}" style="{{ r.style }}">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ f.form.leapVisible }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ f.form.openLeap }}" style="margin-top:10px;width:100%;text-align:left;padding:13px 14px;border:1px solid var(--amber,#a86a12);border-radius:11px;background:var(--amberSoft,#fdf3e2);color:var(--ink,#1b1a17);">
+                    <div style="font-size:calc(14px * var(--s,1));font-weight:700;">윤달 정책 — {{ f.form.leapPolicy }}</div>
+                    <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;line-height:1.5;">윤달 날짜라서 매년 어느 달에 챙길지 정해야 합니다. 눌러서 그림으로 확인</div>
+                  </button>
+                </sc-if>
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">알림</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;">
+                  <sc-for list="{{ f.form.alarms }}" as="a" hint-placeholder-count="5">
+                    <button onClick="{{ a.on }}" style="{{ a.style }}">{{ a.box }} {{ a.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-top:11px;">
+                  <span style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);">시각</span>
+                  <div style="padding:11px 16px;border:1px solid var(--line,#e3dfd6);border-radius:10px;background:var(--surface,#fff);font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">09:00</div>
+                  <span style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);">기일·생신 기본: D-7 · D-1 · 당일</span>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">색상</div>
+                <div style="display:flex;gap:10px;">
+                  <sc-for list="{{ f.form.colors }}" as="c" hint-placeholder-count="6">
+                    <button onClick="{{ c.on }}" style="{{ c.style }}">{{ c.mark }}</button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">메모</div>
+                <textarea onChange="{{ f.setMemo }}" placeholder="큰집에서 · 오후 3시 모임" style="width:100%;height:80px;padding:12px 14px;border:1px solid var(--line,#e3dfd6);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(16px * var(--s,1));resize:none;">{{ f.form.memo }}</textarea>
+              </div>
+
+              <div style="display:flex;gap:8px;">
+                <button onClick="{{ f.askDelete }}" style="height:52px;padding:0 18px;border-radius:11px;border:1px solid var(--line,#e3dfd6);color:var(--red,#c0362c);font-size:calc(15px * var(--s,1));font-weight:700;background:var(--surface,#fff);">삭제</button>
+                <button onClick="{{ f.save }}" style="flex:1;height:52px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(16px * var(--s,1));font-weight:700;">저장</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S5 기일·생신 ===== -->
+          <sc-if value="{{ f.isS5 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 14px 24px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <button onClick="{{ f.newEvent }}" style="height:48px;padding:0 16px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">＋ 사람 추가</button>
+                <div style="flex:1;"></div>
+                <span style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);">정렬: 다가오는 순 ▾</span>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin:10px 2px 12px;">등록 {{ f.peopleCount }}명 · 개수 제한 없음</div>
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ f.people }}" as="p" hint-placeholder-count="4">
+                  <div style="{{ p.cardStyle }}">
+                    <div style="{{ p.stripe }}"></div>
+                    <div style="flex:1;min-width:0;padding:13px 14px;">
+                      <div style="display:flex;align-items:baseline;gap:8px;">
+                        <span style="font-size:calc(18px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ p.name }}</span>
+                        <span style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);">{{ p.kind }}</span>
+                      </div>
+                      <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:5px;font-feature-settings:'tnum';">{{ p.lunarLine }}</div>
+                      <div style="font-size:calc(14px * var(--s,1));color:var(--ink,#1b1a17);margin-top:3px;font-feature-settings:'tnum';">다음 {{ p.next }}</div>
+                      <sc-if value="{{ p.hasExtra }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;">{{ p.extra }}</div>
+                      </sc-if>
+                      <sc-if value="{{ p.hasEve }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:inline-block;margin-top:7px;font-size:calc(12px * var(--s,1));padding:3px 8px;border-radius:6px;background:var(--surface2,#faf9f6);border:1px solid var(--line,#e3dfd6);color:var(--ink2,#5c584f);">전날 {{ p.eve }} 표시</div>
+                      </sc-if>
+                    </div>
+                    <div style="{{ p.ddayStyle }}">{{ p.dday }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S6 변환기 ===== -->
+          <sc-if value="{{ f.isS6 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px 24px;">
+              <div style="display:flex;gap:6px;background:var(--surface2,#faf9f6);border:1px solid var(--line,#e3dfd6);border-radius:11px;padding:4px;">
+                <button onClick="{{ f.conv.pickS2L }}" style="{{ f.conv.tabS2L }}">양력 → 음력</button>
+                <button onClick="{{ f.conv.pickL2S }}" style="{{ f.conv.tabL2S }}">음력 → 양력</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+                <sc-for list="{{ f.conv.fields }}" as="fd" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="width:calc(46px * var(--s,1));font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);">{{ fd.label }}</span>
+                    <button onClick="{{ fd.dec }}" style="width:52px;height:52px;border:1px solid var(--line,#e3dfd6);border-radius:11px;font-size:calc(20px * var(--s,1));color:var(--ink,#1b1a17);background:var(--surface,#fff);">−</button>
+                    <div style="flex:1;text-align:center;font-size:calc(22px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">{{ fd.value }}</div>
+                    <button onClick="{{ fd.inc }}" style="width:52px;height:52px;border:1px solid var(--line,#e3dfd6);border-radius:11px;font-size:calc(20px * var(--s,1));color:var(--ink,#1b1a17);background:var(--surface,#fff);">＋</button>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="{{ f.conv.resultStyle }}">
+                <div style="font-size:calc(13px * var(--s,1));color:var(--ink3,#8f8a80);">결과</div>
+                <div style="font-size:calc(20px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);margin-top:7px;line-height:1.45;font-feature-settings:'tnum';">{{ f.conv.result }}</div>
+                <sc-if value="{{ f.conv.hasSub }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:7px;font-family:'Noto Serif KR',serif;line-height:1.6;">{{ f.conv.sub }}</div>
+                </sc-if>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:14px;">
+                <button onClick="{{ f.copy }}" style="flex:1;height:50px;border:1px solid var(--line,#e3dfd6);border-radius:11px;font-size:calc(15px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);background:var(--surface,#fff);">결과 복사</button>
+                <button onClick="{{ f.newEvent }}" style="flex:1;height:50px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">이 날짜로 일정</button>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:14px;line-height:1.6;">음력·절기는 2050년까지 제공 (한국천문연구원 제공 범위)</div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S7 검색 ===== -->
+          <sc-if value="{{ f.isS7 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 14px 24px;">
+              <input value="{{ f.search.q }}" onChange="{{ f.search.set }}" placeholder="제목 · 메모 · 사람 이름" style="width:100%;height:52px;padding:0 14px;border:1px solid var(--line,#e3dfd6);border-radius:11px;background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(16px * var(--s,1));">
+              <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;">
+                <sc-for list="{{ f.search.chips }}" as="ch" hint-placeholder-count="3">
+                  <button onClick="{{ ch.on }}" style="height:38px;padding:0 12px;border:1px solid var(--line,#e3dfd6);border-radius:19px;font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);background:var(--surface,#fff);">{{ ch.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ f.search.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:34px;text-align:center;font-size:calc(16px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.6;">{{ f.search.emptyText }}</div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
+                <sc-for list="{{ f.search.results }}" as="r" hint-placeholder-count="0">
+                  <button onClick="{{ r.on }}" style="display:flex;align-items:center;gap:12px;text-align:left;padding:14px;border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);">
+                    <span style="{{ r.stripe }}"></span>
+                    <span style="flex:1;min-width:0;">
+                      <span style="display:block;font-size:calc(16px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);">{{ r.title }}</span>
+                      <span style="display:block;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;font-feature-settings:'tnum';">{{ r.sub }}</span>
+                    </span>
+                    <span style="font-size:calc(15px * var(--s,1));color:var(--ink3,#8f8a80);">›</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S8 설정 ===== -->
+          <sc-if value="{{ f.isS8 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:12px 14px 28px;display:flex;flex-direction:column;gap:18px;">
+              <button onClick="{{ f.goPaywall }}" style="display:flex;align-items:center;gap:12px;text-align:left;padding:16px;border:1px solid var(--accent,#2f5d4f);border-radius:12px;background:var(--accentSoft,#e8efea);">
+                <span style="flex:1;">
+                  <span style="display:block;font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">광고 제거 (평생 1회 구매 ₩7,900)</span>
+                  <span style="display:block;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;">구독 아님 · 자동 갱신 없음</span>
+                </span>
+                <span style="font-size:calc(15px * var(--s,1));color:var(--accent,#2f5d4f);">›</span>
+              </button>
+              <button onClick="{{ f.restore }}" style="text-align:left;font-size:calc(15px * var(--s,1));color:var(--accent,#2f5d4f);font-weight:500;padding:4px 2px;min-height:44px;">구매 복원</button>
+
+              <sc-if value="{{ f.alarmWarn }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:14px;border:1px solid var(--amber,#a86a12);border-radius:12px;background:var(--amberSoft,#fdf3e2);">
+                  <div style="font-size:calc(15px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">알림이 최대 15분 늦을 수 있습니다</div>
+                  <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:5px;line-height:1.55;">정확한 알람 권한이 꺼져 있습니다. 기일 알림이 늦게 도착할 수 있습니다.</div>
+                </div>
+              </sc-if>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:4px;">표시 항목</div>
+                <div style="display:flex;gap:8px;margin:8px 0 10px;">
+                  <button onClick="{{ f.allOn }}" style="height:40px;padding:0 12px;border:1px solid var(--line,#e3dfd6);border-radius:9px;font-size:calc(13px * var(--s,1));color:var(--ink,#1b1a17);background:var(--surface,#fff);">전부 켜기</button>
+                  <button onClick="{{ f.allOff }}" style="height:40px;padding:0 12px;border:1px solid var(--line,#e3dfd6);border-radius:9px;font-size:calc(13px * var(--s,1));color:var(--ink,#1b1a17);background:var(--surface,#fff);">전부 끄기</button>
+                </div>
+                <div style="border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);overflow:hidden;">
+                  <sc-for list="{{ f.toggleRows }}" as="t" hint-placeholder-count="8">
+                    <button onClick="{{ t.on }}" style="{{ t.rowStyle }}">
+                      <span style="flex:1;text-align:left;">
+                        <span style="display:block;font-size:calc(16px * var(--s,1));color:var(--ink,#1b1a17);">{{ t.label }}</span>
+                        <span style="display:block;font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:3px;">{{ t.hint }}</span>
+                      </span>
+                      <span style="{{ t.trackStyle }}"><span style="{{ t.knobStyle }}"></span></span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin-bottom:8px;">글자 크기</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ f.scaleOpts }}" as="s" hint-placeholder-count="3">
+                    <button onClick="{{ s.on }}" style="{{ s.style }}">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin:16px 0 8px;">테마</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ f.themeOpts }}" as="s" hint-placeholder-count="3">
+                    <button onClick="{{ s.on }}" style="{{ s.style }}">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);margin:16px 0 8px;">주 시작 요일</div>
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ f.weekOpts }}" as="s" hint-placeholder-count="2">
+                    <button onClick="{{ s.on }}" style="{{ s.style }}">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);overflow:hidden;">
+                <sc-for list="{{ f.settingRows }}" as="r" hint-placeholder-count="6">
+                  <button onClick="{{ r.on }}" style="{{ r.style }}">
+                    <span style="flex:1;text-align:left;">
+                      <span style="display:block;font-size:calc(16px * var(--s,1));color:var(--ink,#1b1a17);">{{ r.label }}</span>
+                      <span style="display:block;font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:3px;font-feature-settings:'tnum';">{{ r.sub }}</span>
+                    </span>
+                    <span style="font-size:calc(15px * var(--s,1));color:var(--ink3,#8f8a80);">›</span>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);line-height:1.7;">음력·절기는 2050년까지 제공 (한국천문연구원 제공 범위)<br>개인정보처리방침 · 오픈소스 고지 · 버전 1.0.0</div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S9 백업 ===== -->
+          <sc-if value="{{ f.isS9 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 16px 24px;">
+              <div style="{{ f.backup.cardStyle }}">
+                <div style="font-size:calc(21px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ f.backup.head }}</div>
+                <div style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);margin-top:9px;line-height:1.6;font-feature-settings:'tnum';">{{ f.backup.body }}</div>
+                <sc-if value="{{ f.backup.hasRetry }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ f.retry }}" style="margin-top:14px;height:48px;padding:0 18px;border-radius:10px;background:var(--red,#c0362c);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">재시도</button>
+                </sc-if>
+              </div>
+              <div style="margin-top:16px;padding:14px;border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface2,#faf9f6);">
+                <div style="font-size:calc(13px * var(--s,1));color:var(--ink3,#8f8a80);">저장 경로</div>
+                <div style="font-size:calc(14px * var(--s,1));color:var(--ink,#1b1a17);margin-top:6px;line-height:1.6;word-break:break-all;font-family:'Noto Sans KR',monospace;">/저장공간/Documents/바른달력/baruncal-2026-08-07-1820.json</div>
+                <button onClick="{{ f.copy }}" style="margin-top:10px;font-size:calc(14px * var(--s,1));color:var(--accent,#2f5d4f);font-weight:700;min-height:44px;">경로 복사</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px;">
+                <button onClick="{{ f.noop }}" style="height:52px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(16px * var(--s,1));font-weight:700;">파일로 백업</button>
+                <button onClick="{{ f.noop }}" style="height:52px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(16px * var(--s,1));font-weight:500;">코드로 백업</button>
+                <button onClick="{{ f.askRestore }}" style="height:52px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(16px * var(--s,1));font-weight:500;">복구</button>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:14px;line-height:1.6;">서버에 보내지 않습니다. 계정도, 동기화도 없습니다. 이 파일이 전부입니다.</div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S10 가져오기 ===== -->
+          <sc-if value="{{ f.isS10 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px 24px;">
+              <div style="display:flex;gap:6px;">
+                <sc-for list="{{ f.wiz.steps }}" as="s" hint-placeholder-count="4">
+                  <div style="flex:1;">
+                    <div style="{{ s.barStyle }}"></div>
+                    <div style="{{ s.labelStyle }}">{{ s.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);margin-top:18px;">{{ f.wiz.title }}</div>
+              <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:7px;line-height:1.6;">{{ f.wiz.desc }}</div>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px;">
+                <sc-for list="{{ f.wiz.options }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.on }}" style="{{ o.style }}">
+                    <span style="flex:1;text-align:left;">
+                      <span style="display:block;font-size:calc(16px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);">{{ o.label }}</span>
+                      <span style="display:block;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;">{{ o.sub }}</span>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ f.wiz.hasPreview }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:14px;border:1px solid var(--line,#e3dfd6);border-radius:12px;overflow:hidden;background:var(--surface,#fff);">
+                  <sc-for list="{{ f.wiz.rows }}" as="r" hint-placeholder-count="5">
+                    <div style="{{ r.style }}">
+                      <span style="width:calc(88px * var(--s,1));flex:none;font-feature-settings:'tnum';">{{ r.date }}</span>
+                      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.title }}</span>
+                      <span style="color:var(--ink3,#8f8a80);">{{ r.tag }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="display:flex;gap:8px;margin-top:18px;">
+                <button onClick="{{ f.wiz.prev }}" style="height:52px;padding:0 18px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(15px * var(--s,1));">이전</button>
+                <button onClick="{{ f.wiz.next }}" style="flex:1;height:52px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(16px * var(--s,1));font-weight:700;">{{ f.wiz.nextLabel }}</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ===== S11 페이월 ===== -->
+          <sc-if value="{{ f.isS11 }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:18px 18px 26px;">
+              <div style="font-size:calc(24px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);line-height:1.4;">광고를 지우고<br>큰 글씨로 보시겠어요?</div>
+              <div style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);margin-top:10px;line-height:1.65;">달력의 정확성은 결제와 무관합니다. 아래 네 가지만 유료입니다.</div>
+              <div style="display:flex;flex-direction:column;gap:1px;margin-top:20px;border:1px solid var(--line,#e3dfd6);border-radius:12px;overflow:hidden;background:var(--line,#e3dfd6);">
+                <sc-for list="{{ benefits }}" as="b" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px;padding:15px 14px;background:var(--surface,#fff);">
+                    <span style="font-size:calc(15px * var(--s,1));color:var(--accent,#2f5d4f);font-weight:700;">✓</span>
+                    <span style="flex:1;font-size:calc(16px * var(--s,1));color:var(--ink,#1b1a17);">{{ b.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="margin-top:18px;padding:16px;border:2px solid var(--accent,#2f5d4f);border-radius:12px;background:var(--accentSoft,#e8efea);">
+                <div style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">영구 무료입니다</div>
+                <div style="font-size:calc(15px * var(--s,1));color:var(--ink,#1b1a17);margin-top:8px;line-height:1.7;">달력 · 음력 · 절기 · 간지 · 공휴일 · <strong>검색</strong> · <strong>위젯</strong> · <strong>백업</strong> · <strong>기일 무제한</strong></div>
+                <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:9px;line-height:1.6;">나중에 유료로 바꾸지 않습니다. 개수 제한을 과금 수단으로 쓰지 않습니다.</div>
+              </div>
+              <div style="margin-top:20px;text-align:center;">
+                <div style="font-size:calc(30px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">₩7,900</div>
+                <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:6px;">1회 구매 · 구독 아님 · 자동 갱신 없음</div>
+              </div>
+              <button onClick="{{ f.noop }}" style="width:100%;height:56px;border-radius:12px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(17px * var(--s,1));font-weight:700;margin-top:16px;">구매하기</button>
+              <button onClick="{{ f.restore }}" style="width:100%;height:50px;border-radius:12px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(15px * var(--s,1));margin-top:9px;">구매 복원</button>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);text-align:center;margin-top:14px;line-height:1.7;">이용약관 · 환불 안내 · 결제는 Google Play를 통해 처리됩니다</div>
+            </div>
+          </sc-if>
+
+          <!-- ===== 위젯 ===== -->
+          <sc-if value="{{ f.isW }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px;background:#20241f;min-height:100%;">
+              <div style="font-size:12px;color:#9aa096;margin-bottom:12px;letter-spacing:0.04em;">홈 화면 · 네이티브 렌더(텍스트·단색 도형만)</div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                  <div style="width:158px;height:158px;border-radius:18px;background:var(--surface,#fff);padding:14px;display:flex;flex-direction:column;">
+                    <div style="font-size:13px;color:var(--red,#c0362c);font-weight:700;">수요일</div>
+                    <div style="font-size:54px;font-weight:700;color:var(--ink,#1b1a17);line-height:1;margin-top:2px;font-feature-settings:'tnum';">15</div>
+                    <div style="font-size:15px;color:var(--ink2,#5c584f);margin-top:6px;font-feature-settings:'tnum';">음 6.2</div>
+                    <div style="flex:1;"></div>
+                    <div style="font-size:14px;font-weight:700;color:var(--accent,#2f5d4f);">초복</div>
+                  </div>
+                  <div style="flex:1;font-size:12px;color:#9aa096;line-height:1.7;padding-top:6px;">W1 오늘 2×2<br>양력·요일·음력·특일 1개.<br>음력이 15px 이상 유지되도록 양력 숫자를 왼쪽 정렬로 눌렀다.</div>
+                </div>
+
+                <div style="border-radius:18px;background:var(--surface,#fff);padding:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+                    <span style="font-size:13px;font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">2026년 7월 · 셋째 주</span>
+                    <span style="font-size:11px;color:var(--ink3,#8f8a80);">초복 · 제헌절</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">
+                    <sc-for list="{{ widgetWeek }}" as="w" hint-placeholder-count="7">
+                      <div style="{{ w.style }}">
+                        <div style="{{ w.numStyle }}">{{ w.day }}</div>
+                        <div style="font-size:11px;color:var(--ink2,#5c584f);margin-top:2px;font-feature-settings:'tnum';">{{ w.lunar }}</div>
+                        <div style="{{ w.dotStyle }}"></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:#9aa096;line-height:1.7;">W2 주간 4×2 — 일정은 점이 아니라 아래 색띠로. 오늘은 배경 + 굵은 테두리.</div>
+
+                <div style="border-radius:18px;background:var(--surface,#fff);padding:12px;">
+                  <div style="font-size:13px;font-weight:700;color:var(--ink,#1b1a17);margin-bottom:8px;font-feature-settings:'tnum';">2026년 7월</div>
+                  <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">
+                    <sc-for list="{{ f.widgetMonth }}" as="w" hint-placeholder-count="42">
+                      <div style="{{ w.style }}">{{ w.day }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="font-size:12px;color:#9aa096;line-height:1.7;">W3 월간 4×4 — 비트맵 합성. 캐시 범위를 벗어나면 격자 대신 「앱을 열어 갱신하세요」만 표시한다(빈 화면·옛 날짜 금지).</div>
+                <div style="border-radius:18px;background:var(--surface,#fff);padding:20px 14px;text-align:center;font-size:14px;color:var(--ink2,#5c584f);">앱을 열어 갱신하세요</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ===== 앱 아이콘 ===== -->
+          <sc-if value="{{ f.isICON }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 16px 30px;">
+              <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.65;">달력 낱장(머리띠 + 고리 2개)과 큰 날짜 숫자가 형태를 잡고, 옆의 초승달이 음력을 말합니다.</div>
+
+              <div style="display:flex;justify-content:center;padding:24px 0 8px;">
+                <div style="width:192px;height:192px;border-radius:43px;background:#f4f0e4;position:relative;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+                  <div style="position:absolute;left:0;top:0;right:0;height:56px;background:#2f5d4f;"></div>
+                  <div style="position:absolute;left:50px;top:-11px;width:18px;height:36px;border-radius:9px;background:#f4f0e4;"></div>
+                  <div style="position:absolute;left:124px;top:-11px;width:18px;height:36px;border-radius:9px;background:#f4f0e4;"></div>
+                  <div style="position:absolute;left:8px;right:58px;top:56px;bottom:0;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;font-size:80px;font-weight:700;color:#2f5d4f;letter-spacing:-0.05em;line-height:1;font-feature-settings:'tnum';">15</div>
+                  <div style="position:absolute;left:132px;top:78px;width:44px;height:44px;border-radius:22px;background:#2f5d4f;"></div>
+                  <div style="position:absolute;left:145px;top:69px;width:44px;height:44px;border-radius:22px;background:#f4f0e4;"></div>
+                </div>
+              </div>
+              <div style="text-align:center;font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);">192dp · 라운드 반경 = 폭의 22.4%</div>
+
+              <div style="display:flex;align-items:flex-end;justify-content:center;gap:18px;margin-top:26px;">
+                <sc-for list="{{ iconSizes }}" as="i" hint-placeholder-count="4">
+                  <div style="text-align:center;">
+                    <div style="{{ i.box }}">
+                      <div style="{{ i.band }}"></div>
+                      <div style="{{ i.ring1 }}"></div>
+                      <div style="{{ i.ring2 }}"></div>
+                      <div style="{{ i.num }}">15</div>
+                      <div style="{{ i.moon }}"></div>
+                      <div style="{{ i.bite }}"></div>
+                    </div>
+                    <div style="font-size:calc(11px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:7px;">{{ i.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:28px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">적응형 아이콘 레이어</span>
+              </div>
+              <div style="display:flex;gap:14px;margin-top:14px;">
+                <div style="flex:1;text-align:center;">
+                  <div style="width:100%;aspect-ratio:1;border-radius:14px;background:#f4f0e4;"></div>
+                  <div style="font-size:calc(11px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:6px;line-height:1.5;">배경 레이어<br>108×108 단색 #f4f0e4</div>
+                </div>
+                <div style="flex:1;text-align:center;">
+                  <div style="width:100%;aspect-ratio:1;border-radius:14px;background:repeating-linear-gradient(45deg,#e9e6dd,#e9e6dd 6px,#dfdcd2 6px,#dfdcd2 12px);position:relative;overflow:hidden;">
+                    <div style="position:absolute;left:17%;top:20%;width:66%;height:19%;border-radius:4px 4px 0 0;background:#2f5d4f;"></div>
+                    <div style="position:absolute;left:32%;top:16%;width:6%;height:12%;border-radius:3px;background:#e9e6dd;"></div>
+                    <div style="position:absolute;left:58%;top:16%;width:6%;height:12%;border-radius:3px;background:#e9e6dd;"></div>
+                    <div style="position:absolute;left:21%;right:36%;top:39%;bottom:20%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#2f5d4f;letter-spacing:-0.05em;line-height:1;">15</div>
+                    <div style="position:absolute;left:61%;top:48%;width:16%;height:16%;border-radius:50%;background:#2f5d4f;"></div>
+                    <div style="position:absolute;left:65.5%;top:45%;width:16%;height:16%;border-radius:50%;background:#e9e6dd;"></div>
+                    <div style="position:absolute;inset:16.7%;border:1px dashed rgba(192,54,44,0.55);border-radius:50%;"></div>
+                  </div>
+                  <div style="font-size:calc(11px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:6px;line-height:1.5;">전경 레이어<br>안전 영역 66/108 내</div>
+                </div>
+                <div style="flex:1;text-align:center;">
+                  <div style="width:100%;aspect-ratio:1;border-radius:14px;background:#1b1a17;position:relative;overflow:hidden;">
+                    <div style="position:absolute;left:19%;top:22%;width:62%;height:18%;border-radius:4px 4px 0 0;background:#f4f0e4;"></div>
+                    <div style="position:absolute;left:33%;top:18%;width:6%;height:12%;border-radius:3px;background:#1b1a17;"></div>
+                    <div style="position:absolute;left:58%;top:18%;width:6%;height:12%;border-radius:3px;background:#1b1a17;"></div>
+                    <div style="position:absolute;left:22%;right:36%;top:40%;bottom:20%;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:700;color:#f4f0e4;letter-spacing:-0.05em;line-height:1;">15</div>
+                    <div style="position:absolute;left:61%;top:49%;width:16%;height:16%;border-radius:50%;background:#f4f0e4;"></div>
+                    <div style="position:absolute;left:65.5%;top:46%;width:16%;height:16%;border-radius:50%;background:#1b1a17;"></div>
+                  </div>
+                  <div style="font-size:calc(11px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:6px;line-height:1.5;">단색(테마) 아이콘<br>빨간 점 제외 · 실루엣만</div>
+                </div>
+              </div>
+
+              <div style="margin-top:24px;padding:14px;border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);">
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">제작 사양</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.55;">
+                  <sc-for list="{{ iconSpecs }}" as="s" hint-placeholder-count="6">
+                    <div style="display:flex;gap:10px;"><span style="width:calc(92px * var(--s,1));flex:none;color:var(--ink3,#8f8a80);">{{ s.k }}</span><span style="flex:1;">{{ s.v }}</span></div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:14px;line-height:1.7;">CSS 도형으로 그린 시안입니다. 납품 시 벡터(SVG/AI)로 다시 그려 512px PNG · 적응형 XML로 내보냅니다.</div>
+            </div>
+          </sc-if>
+
+          <!-- ===== 인터랙션 ===== -->
+          <sc-if value="{{ f.isFX }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:14px 16px 30px;">
+              <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.65;">아래 요소는 전부 실제로 눌립니다. 각 카드의 <strong>재생</strong>을 누르면 전환이 다시 실행됩니다.</div>
+
+              <div style="margin-top:20px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">누름 피드백</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                <button style="height:50px;padding:0 20px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;transition:transform 120ms ease,filter 120ms ease;" style-hover="filter:brightness(1.12);" style-active="transform:scale(0.96);filter:brightness(0.88);">주 버튼</button>
+                <button style="height:50px;padding:0 20px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(15px * var(--s,1));transition:transform 120ms ease,background 120ms ease;" style-hover="background:var(--surface2,#faf9f6);" style-active="transform:scale(0.96);background:var(--accentSoft,#e8efea);">보조 버튼</button>
+                <button style="height:50px;padding:0 20px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface2,#faf9f6);color:var(--ink3,#8f8a80);font-size:calc(15px * var(--s,1));cursor:not-allowed;">비활성</button>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:9px;line-height:1.6;">scale 0.96 · 120ms · ease. 누르는 동안만 유지하고 손을 떼면 즉시 복귀합니다.</div>
+
+              <div style="margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">셀 탭 · 롱프레스</span>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:12px;">
+                <button onClick="{{ f.fx.ripple }}" style="width:96px;height:82px;border:1px solid var(--line,#e3dfd6);border-radius:10px;background:var(--surface,#fff);position:relative;overflow:hidden;padding:6px;text-align:left;">
+                  <span style="display:block;font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">15</span>
+                  <span style="display:block;font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);text-align:right;">음 6.2</span>
+                  <span style="display:block;font-size:calc(11px * var(--s,1));font-weight:700;color:var(--accent,#2f5d4f);">초복</span>
+                  <sc-if value="{{ f.fx.rippleOn }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;left:0;top:0;width:96px;height:96px;border-radius:48px;background:var(--accent,#2f5d4f);animation:bcRipple 420ms ease-out forwards;pointer-events:none;"></span>
+                  </sc-if>
+                </button>
+                <div style="flex:1;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.65;">탭 — 리플 420ms 후 시트 열림<br>롱프레스 500ms — 진동 1회(짧게) 후 근거 화면 직행<br>앞뒤 달 셀은 두 제스처 모두 무반응</div>
+              </div>
+
+              <div style="margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">전환 · 모션</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+                <sc-for list="{{ f.fx.motions }}" as="m" hint-placeholder-count="4">
+                  <div style="border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);overflow:hidden;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;">
+                      <span style="flex:1;">
+                        <span style="display:block;font-size:calc(15px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ m.name }}</span>
+                        <span style="display:block;font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:3px;">{{ m.spec }}</span>
+                      </span>
+                      <button onClick="{{ m.play }}" style="height:44px;padding:0 14px;border-radius:9px;border:1px solid var(--accent,#2f5d4f);color:var(--accent,#2f5d4f);font-size:calc(14px * var(--s,1));font-weight:700;background:var(--surface,#fff);">재생</button>
+                    </div>
+                    <div style="height:96px;border-top:1px solid var(--line,#e3dfd6);background:var(--surface2,#faf9f6);position:relative;overflow:hidden;">
+                      <div style="{{ m.stageStyle }}">{{ m.stageText }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">토글 · 선택</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:12px;">
+                <button onClick="{{ f.fx.flip }}" style="{{ f.fx.toggleStyle }}">
+                  <span style="width:24px;height:24px;border-radius:12px;background:#fff;transition:transform 180ms cubic-bezier(0.2,0,0,1);"></span>
+                </button>
+                <span style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.6;">노브 180ms · cubic-bezier(0.2,0,0,1)<br>트랙 색은 같은 타이밍으로 함께 전환</span>
+              </div>
+
+              <div style="margin-top:22px;padding-bottom:6px;border-bottom:1px solid var(--line,#e3dfd6);display:flex;align-items:center;gap:8px;">
+                <span style="width:4px;height:calc(16px * var(--s,1));background:var(--accent,#2f5d4f);"></span>
+                <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">로딩 · 스켈레톤</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px;">
+                <sc-for list="{{ skeletons }}" as="s" hint-placeholder-count="3">
+                  <div style="{{ s.style }}"></div>
+                </sc-for>
+              </div>
+              <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);margin-top:9px;line-height:1.6;">달력 격자는 스켈레톤을 쓰지 않습니다 — 내장 데이터라 즉시 그려집니다. 스켈레톤은 백업 검증·가져오기 미리보기에만 씁니다.</div>
+
+              <div style="margin-top:22px;padding:14px;border:1px solid var(--line,#e3dfd6);border-radius:12px;background:var(--surface,#fff);">
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">진동(햅틱)</div>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);line-height:1.55;">
+                  <sc-for list="{{ haptics }}" as="h" hint-placeholder-count="4">
+                    <div style="display:flex;gap:10px;"><span style="width:calc(92px * var(--s,1));flex:none;color:var(--ink3,#8f8a80);">{{ h.k }}</span><span style="flex:1;">{{ h.v }}</span></div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="margin-top:16px;padding:14px;border:1px solid var(--amber,#a86a12);border-radius:12px;background:var(--amberSoft,#fdf3e2);">
+                <div style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">모션 줄이기 설정이 켜져 있으면</div>
+                <div style="font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:6px;line-height:1.6;">모든 이동·확대 전환을 120ms 페이드로 대체합니다. 리플과 스켈레톤 흐름은 끕니다. 누름 피드백은 색 변화만 남깁니다.</div>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <!-- ===== S2 바텀시트 ===== -->
+        <sc-if value="{{ f.sheet }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ f.closeSheet }}" style="position:absolute;inset:0;background:rgba(15,16,14,0.42);animation:bcFadeIn 260ms ease;"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:var(--surface,#fff);border-radius:20px 20px 0 0;border-top:1px solid var(--line,#e3dfd6);padding:8px 16px 20px;animation:bcSlideUp 260ms cubic-bezier(0.05,0.7,0.1,1);">
+            <div style="width:40px;height:4px;border-radius:2px;background:var(--line,#e3dfd6);margin:2px auto 12px;"></div>
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:calc(21px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:'tnum';">{{ f.d.title }}</div>
+                <div style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);margin-top:7px;line-height:1.6;font-family:'Noto Serif KR',serif;">{{ f.d.meta }}</div>
+              </div>
+              <button onClick="{{ f.newEvent }}" style="height:44px;padding:0 13px;border-radius:10px;border:1px solid var(--accent,#2f5d4f);color:var(--accent,#2f5d4f);font-size:calc(14px * var(--s,1));font-weight:700;background:var(--surface,#fff);flex:none;">＋ 일정</button>
+            </div>
+
+            <div style="margin-top:20px;display:flex;flex-direction:column;gap:18px;">
+              <div>
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <span style="width:3px;height:calc(14px * var(--s,1));background:var(--ink3,#8f8a80);"></span>
+                  <span style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);">특일</span>
+                </div>
+                <div style="margin-top:8px;display:flex;flex-direction:column;gap:7px;">
+                  <sc-for list="{{ f.d.specials }}" as="s" hint-placeholder-count="1">
+                    <div style="display:flex;align-items:center;gap:9px;">
+                      <span style="{{ s.dot }}"></span>
+                      <span style="font-size:calc(17px * var(--s,1));font-weight:500;color:var(--ink,#1b1a17);">{{ s.name }}</span>
+                      <span style="font-size:calc(13px * var(--s,1));color:var(--ink3,#8f8a80);">{{ s.kind }}</span>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ f.d.noSpecial }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:calc(16px * var(--s,1));color:var(--ink2,#5c584f);">특별한 날은 없습니다</div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div>
+                <div style="display:flex;align-items:center;gap:7px;">
+                  <span style="width:3px;height:calc(14px * var(--s,1));background:var(--ink3,#8f8a80);"></span>
+                  <span style="font-size:calc(14px * var(--s,1));font-weight:700;color:var(--ink2,#5c584f);">일정</span>
+                </div>
+                <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
+                  <sc-for list="{{ f.d.events }}" as="e" hint-placeholder-count="1">
+                    <div style="display:flex;align-items:center;gap:0;border:1px solid var(--line,#e3dfd6);border-radius:11px;overflow:hidden;background:var(--surface2,#faf9f6);">
+                      <span style="{{ e.stripe }}"></span>
+                      <span style="flex:1;min-width:0;padding:12px 12px;">
+                        <span style="display:block;font-size:calc(16px * var(--s,1));color:var(--ink,#1b1a17);">{{ e.title }}</span>
+                        <span style="display:block;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:4px;font-feature-settings:'tnum';">{{ e.sub }}</span>
+                      </span>
+                      <button onClick="{{ e.edit }}" style="padding:0 14px;min-height:48px;font-size:calc(14px * var(--s,1));color:var(--accent,#2f5d4f);font-weight:700;">수정</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ f.d.noEvent }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:calc(16px * var(--s,1));color:var(--ink2,#5c584f);">등록된 일정이 없습니다</div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+
+            <button onClick="{{ f.goReason }}" style="width:100%;height:58px;border-radius:12px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(17px * var(--s,1));font-weight:700;margin-top:22px;">왜 이 날짜인가요?</button>
+            <div style="font-size:calc(12px * var(--s,1));color:var(--ink3,#8f8a80);text-align:center;margin-top:9px;">{{ f.d.reasonHint }}</div>
+          </div>
+        </sc-if>
+
+        <!-- ===== 다이얼로그 ===== -->
+        <sc-if value="{{ f.dlgLeap }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(15,16,14,0.5);display:flex;align-items:center;justify-content:center;padding:18px;">
+            <div style="width:100%;background:var(--surface,#fff);border-radius:16px;padding:18px;max-height:92%;overflow-y:auto;">
+              <div style="font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">윤달에는 어느 달에 챙길까요?</div>
+              <div style="font-size:calc(14px * var(--s,1));color:var(--ink2,#5c584f);margin-top:8px;line-height:1.65;">이 날짜(음력 윤 6월 8일)는 윤달입니다. 윤달은 몇 년에 한 번만 있어서, 없는 해에 어떻게 할지 정해야 합니다.</div>
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px;">
+                <sc-for list="{{ f.leapOpts }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.on }}" style="{{ o.style }}">
+                    <span style="display:flex;align-items:center;gap:9px;">
+                      <span style="{{ o.radio }}"></span>
+                      <span style="font-size:calc(16px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);">{{ o.label }}</span>
+                    </span>
+                    <span style="display:block;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);margin-top:8px;line-height:1.6;">{{ o.desc }}</span>
+                    <span style="display:flex;flex-direction:column;gap:4px;margin-top:9px;font-size:calc(13px * var(--s,1));color:var(--ink,#1b1a17);font-feature-settings:'tnum';">
+                      <sc-for list="{{ o.examples }}" as="ex" hint-placeholder-count="3">
+                        <span style="display:flex;gap:9px;"><span style="color:var(--ink3,#8f8a80);width:calc(52px * var(--s,1));flex:none;">{{ ex.year }}</span><span>{{ ex.text }}</span></span>
+                      </sc-for>
+                    </span>
+                  </button>
+                </sc-for>
+              </div>
+              <button onClick="{{ f.closeDlg }}" style="width:100%;height:52px;border-radius:11px;background:var(--accent,#2f5d4f);color:#fff;font-size:calc(16px * var(--s,1));font-weight:700;margin-top:16px;">이대로 저장</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ f.dlgConfirm }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(15,16,14,0.5);display:flex;align-items:center;justify-content:center;padding:22px;">
+            <div style="width:100%;background:var(--surface,#fff);border-radius:16px;padding:20px;">
+              <div style="font-size:calc(18px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);line-height:1.45;">{{ f.confirm.title }}</div>
+              <div style="font-size:calc(15px * var(--s,1));color:var(--ink2,#5c584f);margin-top:10px;line-height:1.65;">{{ f.confirm.body }}</div>
+              <div style="display:flex;gap:8px;margin-top:18px;">
+                <button onClick="{{ f.closeDlg }}" style="flex:1;height:50px;border-radius:11px;border:1px solid var(--line,#e3dfd6);background:var(--surface,#fff);color:var(--ink,#1b1a17);font-size:calc(15px * var(--s,1));">취소</button>
+                <button onClick="{{ f.closeDlg }}" style="flex:1;height:50px;border-radius:11px;background:var(--red,#c0362c);color:#fff;font-size:calc(15px * var(--s,1));font-weight:700;">{{ f.confirm.ok }}</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ f.toast }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:16px;right:16px;bottom:22px;padding:14px 16px;border-radius:11px;background:rgba(27,26,23,0.92);color:#f5f3ee;font-size:calc(14px * var(--s,1));line-height:1.5;animation:bcToastIn 160ms ease-out;">{{ f.toastText }}</div>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-for>
+  </div>
+
+  <div style="max-width:760px;margin:34px auto 0;font-size:12px;color:#77756e;line-height:1.8;">
+    셀 우선순위 절삭: 공휴일 &gt; 잡절 &gt; 절기 &gt; 기념일 &gt; 손없는날 · 배지 최대 2개(음력 1 + 특일 1) · 배율이 올라가면 음력 → 특일 배지 순으로 숨기고 일정 색띠는 끝까지 유지한다.
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1500,&quot;height&quot;:1000},&quot;defaultTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;,&quot;section&quot;:&quot;기본 상태&quot;},&quot;defaultScale&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;1&quot;,&quot;1.25&quot;,&quot;1.5&quot;],&quot;default&quot;:&quot;1&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;기본 상태&quot;}}">
+const LM = [
+  ['2025-01-29',1,0],['2025-02-28',2,0],['2025-03-29',3,0],['2025-04-28',4,0],['2025-05-27',5,0],
+  ['2025-06-25',6,0],['2025-07-25',6,1],['2025-08-23',7,0],['2025-09-22',8,0],['2025-10-21',9,0],
+  ['2025-11-20',10,0],['2025-12-20',11,0],['2026-01-19',12,0],['2026-02-17',1,0],['2026-03-19',2,0],
+  ['2026-04-17',3,0],['2026-05-17',4,0],['2026-06-15',5,0],['2026-07-14',6,0],['2026-08-13',7,0],
+  ['2026-09-11',8,0],['2026-10-10',9,0],['2026-11-09',10,0],['2026-12-09',11,0],['2027-01-07',12,0],
+  ['2027-02-06',1,0],['2027-03-08',2,0],['2027-04-06',3,0],['2027-05-06',4,0],['2027-06-04',5,0],
+  ['2027-07-04',6,0],['2027-08-02',7,0],['2027-09-01',8,0],['2027-09-30',9,0],['2027-10-29',10,0],
+  ['2027-11-28',11,0],['2027-12-28',12,0],['2028-01-26',1,0]
+];
+const HOL = {
+  '2026-01-01':'신정','2026-02-16':'설날 연휴','2026-02-17':'설날','2026-02-18':'설날 연휴',
+  '2026-03-01':'삼일절','2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날',
+  '2026-05-25':'대체공휴일','2026-06-06':'현충일','2026-08-15':'광복절','2026-08-17':'대체공휴일',
+  '2026-09-24':'추석 연휴','2026-09-25':'추석','2026-09-26':'추석 연휴','2026-09-28':'대체공휴일',
+  '2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'크리스마스'
+};
+const SUB = {'2026-03-02':'삼일절','2026-05-25':'부처님오신날','2026-08-17':'광복절','2026-09-28':'추석','2026-10-05':'개천절'};
+const JEOL = {
+  '2026-01-05':'소한','2026-01-20':'대한','2026-02-04':'입춘','2026-02-18':'우수','2026-03-05':'경칩',
+  '2026-03-20':'춘분','2026-04-05':'청명','2026-04-20':'곡우','2026-05-05':'입하','2026-05-21':'소만',
+  '2026-06-06':'망종','2026-06-21':'하지','2026-07-07':'소서','2026-07-23':'대서','2026-08-07':'입추',
+  '2026-08-23':'처서','2026-09-08':'백로','2026-09-23':'추분','2026-10-08':'한로','2026-10-23':'상강',
+  '2026-11-07':'입동','2026-11-22':'소설','2026-12-07':'대설','2026-12-22':'동지'
+};
+const JEOLIP = {'2026-07-07':'11:37','2026-07-23':'05:04','2026-08-07':'21:19','2026-08-23':'12:08','2026-03-05':'16:52','2026-03-20':'17:41','2026-06-21':'23:57','2026-06-06':'07:14'};
+const JAP = {'2026-07-15':'초복','2026-07-25':'중복','2026-08-14':'말복','2026-04-06':'한식'};
+const ANNIV = {'2026-07-17':'제헌절','2026-10-01':'국군의날','2026-05-08':'어버이날','2026-05-15':'스승의날','2026-04-05':'식목일'};
+const ST_H = '甲乙丙丁戊己庚辛壬癸', ST_K = '갑을병정무기경신임계';
+const BR_H = '子丑寅卯辰巳午未申酉戌亥', BR_K = '자축인묘진사오미신유술해';
+const JMONTH = [['2026-01-05','丑'],['2026-02-04','寅'],['2026-03-05','卯'],['2026-04-05','辰'],['2026-05-05','巳'],['2026-06-06','午'],['2026-07-07','未'],['2026-08-07','申'],['2026-09-08','酉'],['2026-10-08','戌'],['2026-11-07','亥'],['2026-12-07','子']];
+const PAL = ['#2f5d8f','#2c7d70','#7a4a86','#9a6b2f','#4a4a46','#a8443a'];
+const DOWK = ['일','월','화','수','목','금','토'];
+const TODAY = '2026-07-15';
+
+const EV = [
+  {t:'병원 예약', d:'2026-07-02', sub:'10:30', c:0},
+  {t:'큰형 생신', d:'2026-07-04', sub:'음력 5월 20일 · 매년', c:3, lunar:'음력 5월 20일'},
+  {t:'계모임', d:'2026-07-15', sub:'19:00~21:00', c:1},
+  {t:'가족 여행', d:'2026-07-17', end:'2026-07-19', sub:'3일', c:2},
+  {t:'아이 방학식', d:'2026-07-24', sub:'09:00', c:0},
+  {t:'할머니 제사 (큰집에서)', d:'2026-07-25', sub:'음력 6월 12일 · 매년', c:4, lunar:'음력 6월 12일'},
+  {t:'아버님 기일', d:'2026-11-15', sub:'음력 10월 7일 · 매년', c:4, lunar:'음력 10월 7일'},
+  {t:'어머님 생신', d:'2027-04-08', sub:'음력 3월 3일 · 매년', c:5, lunar:'음력 3월 3일'}
+];
+const PEOPLE = [
+  {name:'할머니', kind:'기일', lunar:'기일 음력 6월 12일', next:'2026-07-25', c:4},
+  {name:'아버님', kind:'기일', lunar:'기일 음력 10월 7일', next:'2026-11-15', c:4},
+  {name:'장인어른', kind:'생신', lunar:'생신 양력 9월 3일', next:'2026-09-03', c:1, born:1948},
+  {name:'어머님', kind:'생신', lunar:'생신 음력 3월 3일', next:'2027-04-08', c:5, born:1951},
+  {name:'큰형', kind:'생신', lunar:'생신 음력 5월 20일', next:'2027-06-23', c:3, born:1962}
+];
+const ZODIAC = ['원숭이','닭','개','돼지','쥐','소','호랑이','토끼','용','뱀','말','양'];
+
+function dn(s){ const p = s.split('-').map(Number); return Math.floor(Date.UTC(p[0],p[1]-1,p[2])/86400000); }
+function ds(n){ const d = new Date(n*86400000); return d.toISOString().slice(0,10); }
+function dow(s){ return ((dn(s)%7)+11)%7; }
+function lunarOf(s){
+  const n = dn(s); let i = -1;
+  for (let k=0;k<LM.length;k++){ if (dn(LM[k][0])<=n) i=k; }
+  if (i<0 || i>=LM.length-1) return null;
+  const days = dn(LM[i+1][0]) - dn(LM[i][0]);
+  return {m:LM[i][1], leap:!!LM[i][2], d:n-dn(LM[i][0])+1, big:days===30};
+}
+function ganji(s){
+  const n = ((dn(s)-dn(TODAY)+16)%60+60)%60;
+  return ST_H[n%10]+BR_H[n%12]+'('+ST_K[n%10]+BR_K[n%12]+')';
+}
+function isGyeong(s){ return ((dn(s)-dn(TODAY)+16)%60+60)%60%10===6; }
+function monthGanji(s){
+  let br = '丑', ord = 11;
+  for (let i=0;i<JMONTH.length;i++){ if (dn(JMONTH[i][0])<=dn(s)){ br = JMONTH[i][1]; } }
+  const order = {'寅':0,'卯':1,'辰':2,'巳':3,'午':4,'未':5,'申':6,'酉':7,'戌':8,'亥':9,'子':10,'丑':11};
+  ord = order[br];
+  const si = (6+ord)%10;
+  const bi = BR_H.indexOf(br);
+  return ST_H[si]+br+'('+ST_K[si]+BR_K[bi]+')';
+}
+function sonEomneun(s){ const l = lunarOf(s); if(!l) return false; const u = l.d%10; return u===9 || u===0; }
+function fmtK(s){ const p = s.split('-'); return Number(p[0])+'년 '+Number(p[1])+'월 '+Number(p[2])+'일 ('+DOWK[dow(s)]+')'; }
+function fmtMD(s){ const p = s.split('-'); return p[1]+'-'+p[2]; }
+function lunarShort(s){ const l = lunarOf(s); if(!l) return ''; return (l.leap?'윤 ':'음 ')+l.m+'.'+l.d; }
+function lunarLong(s){ const l = lunarOf(s); if(!l) return ''; return '음력 '+(l.leap?'윤 ':'')+l.m+'월 '+l.d+'일 ('+(l.big?'대':'소')+')'; }
+function specialsOf(s, tg){
+  const out = [];
+  if (HOL[s] && tg.holiday) out.push({name:(SUB[s]?SUB[s]+' 대체공휴일':HOL[s]), cell:HOL[s], kind:'공휴일', rank:1, red:true});
+  if (JAP[s] && tg.japjeol) out.push({name:JAP[s], cell:JAP[s], kind:'잡절', rank:2});
+  if (JEOL[s] && tg.jeolgi) out.push({name:JEOL[s], cell:JEOL[s], kind:'24절기', rank:3});
+  if (ANNIV[s] && tg.anniv) out.push({name:ANNIV[s], cell:ANNIV[s], kind:'기념일', rank:4});
+  if (tg.son && sonEomneun(s)) out.push({name:'손없는날', cell:'손없는날', kind:'속설', rank:5});
+  out.sort((a,b)=>a.rank-b.rank);
+  return out;
+}
+function eventsOf(s){
+  return EV.filter(e => e.end ? (dn(e.d)<=dn(s) && dn(s)<=dn(e.end)) : e.d===s);
+}
+function THEME(t){
+  if (t==='dark') return '--bg:#141613;--surface:#1d201c;--surface2:#252822;--ink:#ecebe4;--ink2:#a8a49a;--ink3:#7d7a72;--line:#343830;--accent:#8fbfa9;--accentSoft:#22302a;--red:#ef7c72;--blue:#8fb4ea;--amber:#ddaa55;--amberSoft:#33291a;--redSoft:#331f1d;--todayBg:#232a25;';
+  return '--bg:#f4f2ee;--surface:#ffffff;--surface2:#faf9f6;--ink:#1b1a17;--ink2:#5c584f;--ink3:#8f8a80;--line:#e3dfd6;--accent:#2f5d4f;--accentSoft:#e8efea;--red:#c0362c;--blue:#27508f;--amber:#a86a12;--amberSoft:#fdf3e2;--redSoft:#fbeceb;--todayBg:#eef3ef;';
+}
+const SEG = (on) => 'height:30px;padding:0 11px;border-radius:7px;font-size:12px;font-weight:'+(on?'700':'400')+';color:'+(on?'#0e0f0d':'#a3a19a')+';background:'+(on?'#cddcd2':'transparent')+';';
+const PILL = (on) => 'min-height:44px;padding:0 14px;border-radius:10px;font-size:calc(14px * var(--s,1));font-weight:'+(on?'700':'400')+';border:1px solid '+(on?'var(--accent,#2f5d4f)':'var(--line,#e3dfd6)')+';color:'+(on?'#fff':'var(--ink,#1b1a17)')+';background:'+(on?'var(--accent,#2f5d4f)':'var(--surface,#fff)')+';';
+const TAB = (on) => 'flex:1;height:46px;border-radius:8px;font-size:calc(15px * var(--s,1));font-weight:'+(on?'700':'500')+';color:'+(on?'#fff':'var(--ink2,#5c584f)')+';background:'+(on?'var(--accent,#2f5d4f)':'transparent')+';';
+const ROW = (last) => 'display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px 14px;text-align:left;'+(last?'':'border-bottom:1px solid var(--line,#e3dfd6);');
+
+class Component extends DCLogic {
+  state = {
+    view:'single', theme:this.props.defaultTheme || 'light', scale:Number(this.props.defaultScale)||1,
+    screen:'S1', y:2026, m:7, sel:TODAY, sheet:false, reason:TODAY, shared:false,
+    toggles:{lunar:true,jeolgi:true,japjeol:true,holiday:true,anniv:true,event:true,son:false,ganji:false},
+    weekStart:0, outOfRange:false, badge:'ok', dialog:null, wizard:1, wizSource:0,
+    search:'', form:{title:'할머니 제사 (큰집에서)', mode:'lunar', date:'2026-07-25', repeat:'매년(음력)', leap:false, policy:'항상 평달', alarms:{0:true,1:true,7:true}, color:4, memo:'', multi:false},
+    toast:'', srch:'', restored:false
+  };
+  toast(t){ this.setState({toast:t}); clearTimeout(this._tt); this._tt = setTimeout(()=>this.setState({toast:''}),2200); }
+  go(s){ this.setState({screen:s, sheet:false}); }
+  setTg(k){ const t = Object.assign({}, this.state.toggles); t[k] = !t[k]; this.setState({toggles:t}); }
+  navMonth(d){
+    let y = this.state.y, m = this.state.m + d;
+    if (m>12){m=1;y++;} if (m<1){m=12;y--;}
+    if (y<2025 || y>2027){ this.setState({outOfRange:true}); return; }
+    this.setState({y:y, m:m, outOfRange:false});
+  }
+
+  buildCells(cfg){
+    const tg = cfg.toggles, ws = this.state.weekStart;
+    const first = this.state.y+'-'+String(this.state.m).padStart(2,'0')+'-01';
+    const start = dn(first) - ((dow(first) - ws + 7) % 7);
+    const cells = [];
+    for (let i=0;i<42;i++){
+      const s = ds(start+i);
+      const dowi = dow(s), inMonth = Number(s.slice(5,7))===this.state.m;
+      const sp = specialsOf(s, tg);
+      const evs = tg.event ? eventsOf(s) : [];
+      const isToday = s===TODAY;
+      const big = cfg.scale >= 1.5;
+      let numColor = 'var(--ink,#1b1a17)';
+      if (!inMonth) numColor = 'var(--ink3,#8f8a80)';
+      else if (dowi===0 || (HOL[s] && tg.holiday)) numColor = 'var(--red,#c0362c)';
+      else if (dowi===6) numColor = 'var(--blue,#27508f)';
+      const bgEv = evs.length && inMonth;
+      const cell = 'min-height:calc(58px * var(--s,1));padding:5px 4px 4px;border-right:1px solid var(--line,#e3dfd6);border-bottom:1px solid var(--line,#e3dfd6);display:flex;flex-direction:column;gap:2px;overflow:hidden;cursor:'+(inMonth?'pointer':'default')+';'
+        + 'background:'+(isToday ? 'var(--todayBg,#eef3ef)' : (bgEv ? 'var(--surface2,#faf9f6)' : 'transparent'))+';'
+        + (isToday ? 'box-shadow:inset 0 0 0 2px var(--accent,#2f5d4f);' : '')
+        + (!inMonth ? 'opacity:0.55;' : '');
+      const badges = [];
+      if (sp.length && !(big && cfg.scale>=1.5 && sp.length>1)){
+        const s0 = sp[0];
+        badges.push({text:s0.cell, style:'font-size:calc(11px * var(--s,1));line-height:1.25;font-weight:'+(s0.red?'700':'500')+';color:'+(s0.red?'var(--red,#c0362c)':(s0.rank===2?'var(--accent,#2f5d4f)':'var(--ink2,#5c584f)'))+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'});
+      }
+      const bars = evs.slice(0, big?1:2).map(e=>{
+        const isStart = !e.end || e.d===s || dowi===ws;
+        return {text:isStart?e.t:'', style:'font-size:calc(10.5px * var(--s,1));line-height:1.3;padding:1px 3px 1px 5px;border-left:3px solid '+PAL[e.c]+';background:'+PAL[e.c]+'1f;color:var(--ink,#1b1a17);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'+(e.end?'border-radius:0 3px 3px 0;':'')};
+      });
+      cells.push({
+        key:s, day:Number(s.slice(8,10)), hasLunar: tg.lunar && inMonth && !(cfg.scale>=1.5 && sp.length>0),
+        lunar: lunarShort(s),
+        numStyle:'font-size:calc(19px * var(--s,1));font-weight:'+(isToday?'700':'500')+';color:'+numColor+';font-feature-settings:"tnum";line-height:1.1;',
+        lunarStyle:'font-size:calc(12px * var(--s,1));line-height:1.2;color:var(--ink3,#8f8a80);font-feature-settings:"tnum";white-space:nowrap;text-align:right;margin-top:-1px;',
+        cell:cell, badges:badges, bars:bars,
+        tap: inMonth && cfg.live ? (()=>this.setState({sel:s, sheet:true})) : (()=>{}),
+        long: inMonth && cfg.live ? ((e)=>{ e.preventDefault(); this.setState({sel:s, reason:s, screen:'S3', sheet:false, shared:false}); }) : ((e)=>e.preventDefault())
+      });
+    }
+    return cells;
+  }
+
+  reasonFor(s){
+    const gj = ganji(s);
+    const l = lunarOf(s);
+    const base = { dateLine: fmtK(s), subLine: lunarLong(s)+'  ·  일진 '+gj };
+    if (JAP[s]==='초복' || JAP[s]==='중복'){
+      const n = JAP[s]==='초복' ? 3 : 4;
+      const steps = [];
+      let d = dn('2026-06-25');
+      for (let i=0;i<n;i++){ const cur = ds(d); steps.push({n:'①②③④'[i], date:fmtMD(cur), note:ganji(cur).slice(0,2), isToday:cur===s}); d+=10; }
+      return Object.assign(base, {
+        subject: JAP[s], rule: '하지가 지난 뒤 '+(n===3?'세':'네')+' 번째 庚(경)일입니다.',
+        anchor: '하지 2026-06-21 (절입 06-21 · 자정 근처라 시각은 표시하지 않습니다)',
+        steps: steps, hasNote:true,
+        note: '※ 하지 당일이 庚일이면 그날을 첫 번째로 셉니다. 2026년 하지는 丙일이라 6월 25일이 첫 번째입니다.'
+      });
+    }
+    if (JAP[s]==='말복'){
+      return Object.assign(base, {
+        subject:'말복', rule:'입추가 지난 뒤 첫 번째 庚(경)일입니다.',
+        anchor:'입추 2026-08-07 · 절입 08-07 21:19경(계산)',
+        steps:[{n:'①',date:'08-04',note:'庚 — 입추 전이라 세지 않음',isToday:false},{n:'②',date:'08-14',note:'庚 — 입추 이후 첫 庚일',isToday:true}],
+        hasNote:true, note:'※ 중복(07-25)과 말복 사이가 20일이라 이 해는 월복(越伏)입니다.'
+      });
+    }
+    if (SUB[s]){
+      return Object.assign(base, {
+        subject: SUB[s]+' 대체공휴일', rule:'본 공휴일이 주말과 겹쳐 다음 첫 비공휴일로 옮겨진 날입니다.',
+        anchor: SUB[s]+' '+ (s==='2026-08-17'?'2026-08-15 (토)':'2026-03-01 (일)'),
+        steps: s==='2026-08-17'
+          ? [{n:'①',date:'08-15',note:'광복절 · 토요일',isToday:false},{n:'②',date:'08-16',note:'일요일',isToday:false},{n:'③',date:'08-17',note:'월요일 → 대체공휴일',isToday:true}]
+          : [{n:'①',date:'03-01',note:'삼일절 · 일요일',isToday:false},{n:'②',date:'03-02',note:'월요일 → 대체공휴일',isToday:true}],
+        hasNote:true, note:'※ 셀에는 「대체공휴일」, 상세에는 「'+SUB[s]+' 대체공휴일」로 표시합니다.'
+      });
+    }
+    if (JEOL[s]){
+      const t = JEOLIP[s];
+      const near = t && (t<'00:30' || t>'23:30');
+      return Object.assign(base, {
+        subject: JEOL[s]+' · 24절기', rule:'태양의 황경이 정해진 각도에 이르는 순간이 든 날입니다. 날짜는 한국천문연구원 확정값입니다.',
+        anchor: near ? ('절입 '+fmtMD(s)+' — 자정 ±30분이라 시각은 표시하지 않습니다') : ('절입 '+fmtMD(s)+' '+(t||'')+'경(계산)'),
+        steps:[{n:'①',date:fmtMD(s),note:JEOL[s]+' 입절',isToday:true},{n:'②',date:'월건',note:monthGanji(s)+'월로 바뀝니다',isToday:false}],
+        hasNote:true, note:'※ 「경(계산)」은 분 단위 시각이 계산 추정치라는 표시입니다. 날짜는 확정값입니다.'
+      });
+    }
+    return Object.assign(base, {
+      subject:'일진 '+gj, rule:'60간지를 하루에 하나씩 순서대로 세어 얻은 날입니다.',
+      anchor: monthGanji(s)+'월 · 음력 '+(l?l.m+'월 '+l.d+'일':'') + (sonEomneun(s)?' · 손없는날':' · 손없는날 아님'),
+      steps:[{n:'①',date:fmtMD(ds(dn(s)-1)),note:ganji(ds(dn(s)-1)),isToday:false},{n:'②',date:fmtMD(s),note:gj,isToday:true},{n:'③',date:fmtMD(ds(dn(s)+1)),note:ganji(ds(dn(s)+1)),isToday:false}],
+      hasNote:true, note:'※ 간지는 정보 표시입니다. 해석하지 않습니다.'
+    });
+  }
+
+  detailFor(s){
+    const tg = this.state.toggles;
+    const sp = specialsOf(s, tg);
+    const evs = eventsOf(s);
+    const parts = [lunarLong(s)];
+    if (tg.ganji) parts.push(monthGanji(s)+'월 '+ganji(s)+'일');
+    if (tg.son) parts.push(sonEomneun(s)?'손없는날':'손없는날 아님');
+    return {
+      title: fmtK(s), meta: parts.join(' · '),
+      specials: sp.map(x=>({name:x.name, kind:x.kind, dot:'width:8px;height:8px;border-radius:50%;background:'+(x.red?'var(--red,#c0362c)':'var(--accent,#2f5d4f)')+';flex:none;'})),
+      noSpecial: sp.length===0,
+      events: evs.map((e,i)=>({title:e.t, sub:(e.lunar?'('+e.lunar+') · 매년':e.sub), stripe:'width:6px;align-self:stretch;background:'+PAL[e.c]+';flex:none;', edit:()=>this.setState({screen:'S4',sheet:false})})),
+      noEvent: evs.length===0,
+      reasonHint: sp.length? (sp[0].name+'이 왜 이 날인지 계산 과정을 보여줍니다') : ('일진 '+ganji(s)+'과 음력 계산 근거를 보여줍니다')
+    };
+  }
+
+  makeFrame(cfg){
+    const st = this.state;
+    const scale = cfg.scale || 1, theme = cfg.theme || 'light';
+    const tg = cfg.toggles || st.toggles;
+    const screen = cfg.screen || 'S1';
+    const titles = {S3:'왜 이 날짜인가요?',S4:'일정 편집',S5:'기일 · 생신',S6:'음↔양 변환기',S7:'검색',S8:'설정',S9:'백업 · 복원',S10:'가져오기',S11:'광고 제거',W:'위젯',ICON:'앱 아이콘',FX:'인터랙션 · 모션'};
+    const f = {
+      label:cfg.label||'', hasLabel:!!cfg.label,
+      rootStyle: THEME(theme)+'--s:'+scale+';width:390px;flex:none;',
+      shellStyle:'width:390px;height:812px;border-radius:34px;overflow:hidden;position:relative;display:flex;flex-direction:column;background:var(--bg,#f4f2ee);border:1px solid '+(theme==='dark'?'#33372f':'#2a2c28')+';box-shadow:0 24px 60px rgba(0,0,0,0.45);'+(cfg.live?'':'pointer-events:none;'),
+      isS1:screen==='S1', isS3:screen==='S3', isS4:screen==='S4', isS5:screen==='S5', isS6:screen==='S6',
+      isS7:screen==='S7', isS8:screen==='S8', isS9:screen==='S9', isS10:screen==='S10', isS11:screen==='S11', isW:screen==='W',
+      isICON:screen==='ICON', isFX:screen==='FX', fx:this.fxVM(),
+      showHeader: screen!=='S1', title: titles[screen]||'',
+      outOfRange: !!cfg.outOfRange, showGrid: !cfg.outOfRange,
+      monthTitle: st.y+'년 '+st.m+'월',
+      back: ()=>this.go('S1'), goSearch:()=>this.go('S7'), goSettings:()=>this.go('S8'), goBackup:()=>this.go('S9'),
+      goPaywall:()=>this.go('S11'), newEvent:()=>this.go('S4'), goToday:()=>this.setState({y:2026,m:7,outOfRange:false,screen:'S1'}),
+      prevMonth:()=>this.navMonth(-1), nextMonth:()=>this.navMonth(1),
+      closeSheet:()=>this.setState({sheet:false}), goReason:()=>this.setState({screen:'S3',reason:st.sel,sheet:false,shared:false}),
+      share:()=>this.setState({shared:true}), shared:st.shared,
+      noop:()=>this.toast('목업입니다 — 실제 동작은 구현 단계에서'), copy:()=>this.toast('복사했습니다'),
+      restore:()=>this.toast('구매 이력을 확인했습니다 — 복원할 구매가 없습니다'),
+      askDelete:()=>this.setState({dialog:'del'}), askRestore:()=>this.setState({dialog:'restore'}),
+      retry:()=>{ this.setState({badge:'ok'}); this.toast('다시 검증했습니다 — 일치'); },
+      closeDlg:()=>this.setState({dialog:null}),
+      toast:!!st.toast && !!cfg.live, toastText:st.toast,
+      sheet: cfg.sheet!==undefined ? cfg.sheet : (st.sheet && cfg.live),
+      dlgLeap: cfg.live && st.dialog==='leap', dlgConfirm: cfg.live && (st.dialog==='del'||st.dialog==='restore'),
+      confirm: st.dialog==='restore'
+        ? {title:'백업을 복구하면 현재 데이터를 덮어씁니다', body:'현재 일정 128건 · 사람 5명이 백업 시점(08-07 18:20)의 일정 126건 · 사람 5명으로 바뀝니다. 최근 2건은 사라집니다.', ok:'덮어쓰기'}
+        : {title:'이 일정을 삭제할까요?', body:'「할머니 제사 (큰집에서)」와 이 일정의 반복 12회, 알림 3건이 함께 삭제됩니다.', ok:'삭제'},
+      alarmWarn:true,
+      dows: [0,1,2,3,4,5,6].map(i=>{ const d=(i+st.weekStart)%7; return {label:DOWK[d], style:'text-align:center;padding:7px 0;font-size:calc(13px * var(--s,1));font-weight:700;color:'+(d===0?'var(--red,#c0362c)':(d===6?'var(--blue,#27508f)':'var(--ink2,#5c584f)'))+';'}; }),
+      cells: this.buildCells({toggles:tg, scale:scale, live:!!cfg.live}),
+      monthSpecials: Object.keys(JEOL).concat(Object.keys(JAP),Object.keys(ANNIV),Object.keys(HOL))
+        .filter(k=>Number(k.slice(5,7))===st.m && Number(k.slice(0,4))===st.y)
+        .sort().map(k=>({text:Number(k.slice(5,7))+'/'+Number(k.slice(8,10))+' '+(HOL[k]||JAP[k]||JEOL[k]||ANNIV[k]), style:'font-weight:'+(HOL[k]?'700':'400')+';color:'+(HOL[k]?'var(--red,#c0362c)':'var(--ink2,#5c584f)')+';'})),
+      badgeStyle:'display:flex;align-items:center;gap:9px;width:100%;min-height:44px;padding:9px 12px;border-radius:10px;font-size:calc(13px * var(--s,1));font-feature-settings:"tnum";'
+        + (st.badge==='bad' ? 'background:var(--redSoft,#fbeceb);border:1px solid var(--red,#c0362c);color:var(--red,#c0362c);'
+        : st.badge==='wait' ? 'background:var(--surface2,#faf9f6);border:1px solid var(--line,#e3dfd6);color:var(--ink2,#5c584f);'
+        : 'background:var(--surface2,#faf9f6);border:1px solid var(--line,#e3dfd6);color:var(--ink2,#5c584f);'),
+      badgeIcon: st.badge==='bad'?'!':(st.badge==='wait'?'⋯':'✓'),
+      badgeText: st.badge==='bad'?'백업 확인 필요 — 일정 3건이 다릅니다':(st.badge==='wait'?'검증 대기 · 08-07 18:20':'백업 OK · 일정 128 · 08-07 18:20'),
+      badgeAction: st.badge==='bad',
+      d: this.detailFor(st.sel), r: this.reasonFor(cfg.reason || st.reason),
+      people: PEOPLE.map(p=>{
+        const dd = dn(p.next)-dn(TODAY);
+        const near = dd<=30;
+        return {
+          name:p.name, kind:p.kind, lunarLine:p.lunar,
+          next: p.next.slice(5,7)+'/'+p.next.slice(8,10)+'('+DOWK[dow(p.next)]+')',
+          hasExtra: p.kind==='생신', extra: p.born ? ('만 '+(2026-p.born)+'세 · '+ZODIAC[p.born%12]+'띠') : '',
+          hasEve: p.kind==='기일', eve: ds(dn(p.next)-1).slice(5).replace('-','/'),
+          cardStyle:'display:flex;align-items:stretch;border:1px solid '+(near?'var(--accent,#2f5d4f)':'var(--line,#e3dfd6)')+';border-radius:12px;overflow:hidden;background:var(--surface,#fff);',
+          stripe:'width:6px;flex:none;background:'+PAL[p.c]+';',
+          dday:(dd===0?'D-DAY':'D-'+dd),
+          ddayStyle:'flex:none;display:flex;align-items:center;padding:0 14px;font-size:calc('+(near?'18':'16')+'px * var(--s,1));font-weight:700;font-feature-settings:"tnum";color:'+(near?'var(--accent,#2f5d4f)':'var(--ink3,#8f8a80)')+';'+(near?'background:var(--accentSoft,#e8efea);':'')
+        };
+      }),
+      peopleCount: PEOPLE.length,
+      toggleRows: [['lunar','음력','셀에 작은 숫자 · 상세엔 항상'],['jeolgi','24절기','셀 배지'],['japjeol','잡절 (삼복·한식)','셀 배지'],['holiday','공휴일','빨강 + 상세에 이름'],['anniv','기념일','빨간날 아님'],['event','일정','배경 톤 + 좌측 색띠'],['son','손없는날','기본 꺼짐'],['ganji','간지 (일진)','기본 꺼짐']].map((t,i,arr)=>({
+        label:t[1], hint:t[2],
+        rowStyle: ROW(i===arr.length-1)+'background:var(--surface,#fff);',
+        trackStyle:'width:50px;height:30px;border-radius:15px;flex:none;padding:3px;display:flex;justify-content:'+(tg[t[0]]?'flex-end':'flex-start')+';background:'+(tg[t[0]]?'var(--accent,#2f5d4f)':'var(--line,#e3dfd6)')+';transition:background 180ms ease;',
+        knobStyle:'width:24px;height:24px;border-radius:12px;background:#fff;transition:transform 180ms cubic-bezier(0.2,0,0,1);',
+        on:()=>this.setTg(t[0])
+      })),
+      scaleOpts:[1,1.25,1.5].map(v=>({label:'배율 '+v.toFixed(2).replace(/0$/,''), style:PILL(st.scale===v), on:()=>this.setState({scale:v})})),
+      themeOpts:['시스템','라이트','다크'].map((l,i)=>({label:l, style:PILL((i===1&&st.theme==='light')||(i===2&&st.theme==='dark')), on:()=>this.setState({theme:i===2?'dark':'light'})})),
+      weekOpts:['일요일 시작','월요일 시작'].map((l,i)=>({label:l, style:PILL(st.weekStart===i), on:()=>this.setState({weekStart:i})})),
+      settingRows:[
+        {label:'알림 기본 시각 · 제사 전날 표시', sub:'09:00 · 전날 표시 켜짐', on:()=>this.toast('목업입니다')},
+        {label:'공휴일 데이터 상태', sub:'내장 데이터 사용 중 · 마지막 확인 2026-08-07', on:()=>this.toast('갱신을 확인했습니다 — 변경 없음')},
+        {label:'기일 · 생신 목록', sub:'5명 · 개수 제한 없음', on:()=>this.go('S5')},
+        {label:'음↔양 변환기', sub:'양력 ↔ 음력', on:()=>this.go('S6')},
+        {label:'백업 · 복원', sub:'백업 OK · 08-07 18:20', on:()=>this.go('S9')},
+        {label:'가져오기', sub:'CSV · 붙여넣기 · 기기 캘린더', on:()=>this.go('S10')}
+      ].map((r,i,a)=>Object.assign(r,{style:ROW(i===a.length-1)+'background:var(--surface,#fff);'})),
+      allOn:()=>this.setState({toggles:{lunar:1,jeolgi:1,japjeol:1,holiday:1,anniv:1,event:1,son:1,ganji:1}}),
+      allOff:()=>this.setState({toggles:{lunar:0,jeolgi:0,japjeol:0,holiday:0,anniv:0,event:0,son:0,ganji:0}}),
+      backup: {
+        cardStyle:'padding:18px;border-radius:14px;border:1px solid '+(st.badge==='bad'?'var(--red,#c0362c)':'var(--line,#e3dfd6)')+';background:'+(st.badge==='bad'?'var(--redSoft,#fbeceb)':'var(--surface,#fff)')+';',
+        head: st.badge==='bad'?'백업 확인 필요':(st.badge==='wait'?'검증 대기':'백업 OK'),
+        body: st.badge==='bad'?'일정 3건이 백업과 다릅니다 · 08-07 18:20':'일정 128 · 사람 5 · 08-07 18:20 · 저장할 때마다 역파싱으로 다시 읽어 확인합니다',
+        hasRetry: st.badge==='bad'
+      },
+      widgetMonth: this.buildCells({toggles:{lunar:0,jeolgi:0,japjeol:0,holiday:1,anniv:0,event:1,son:0,ganji:0},scale:1,live:false}).map(c=>({
+        day:c.day, style:'text-align:center;padding:3px 0;font-size:11px;font-feature-settings:"tnum";border-radius:4px;'+(c.key===TODAY?'background:var(--accent,#2f5d4f);color:#fff;font-weight:700;':'color:'+(Number(c.key.slice(5,7))===st.m?(dow(c.key)===0||HOL[c.key]?'var(--red,#c0362c)':(dow(c.key)===6?'var(--blue,#27508f)':'var(--ink,#1b1a17)')):'var(--ink3,#8f8a80)')+';')
+      })),
+      form: this.formVM(),
+      leapOpts: [
+        {k:'항상 평달', desc:'윤달이 있는 해에도 평달(6월 8일)에 챙깁니다. 대부분 이렇게 씁니다.', ex:[['2026년','음 6월 8일'],['2028년','음 6월 8일 (윤달 무시)'],['2031년','음 6월 8일']]},
+        {k:'윤달 우선', desc:'윤달이 있는 해에는 윤달(윤 6월 8일)에 챙깁니다.', ex:[['2026년','음 6월 8일'],['2028년','윤 6월 8일'],['2031년','음 6월 8일']]},
+        {k:'둘 다', desc:'윤달이 있는 해에는 두 날 모두 알려줍니다.', ex:[['2026년','음 6월 8일'],['2028년','음 6월 8일 + 윤 6월 8일'],['2031년','음 6월 8일']]}
+      ].map(o=>({
+        label:o.k, desc:o.desc, examples:o.ex.map(e=>({year:e[0],text:e[1]})),
+        style:'width:100%;text-align:left;padding:14px;border-radius:12px;border:'+(st.form.policy===o.k?'2px solid var(--accent,#2f5d4f)':'1px solid var(--line,#e3dfd6)')+';background:'+(st.form.policy===o.k?'var(--accentSoft,#e8efea)':'var(--surface,#fff)')+';',
+        radio:'width:18px;height:18px;border-radius:9px;flex:none;border:'+(st.form.policy===o.k?'6px solid var(--accent,#2f5d4f)':'2px solid var(--ink3,#8f8a80)')+';',
+        on:()=>this.setState({form:Object.assign({},st.form,{policy:o.k})})
+      })),
+      conv: this.convVM(),
+      search: this.searchVM(),
+      wiz: this.wizVM(),
+      setTitle:(e)=>this.setState({form:Object.assign({},st.form,{title:e.target.value})}),
+      setMemo:(e)=>this.setState({form:Object.assign({},st.form,{memo:e.target.value})}),
+      save:()=>{ this.setState({screen:'S1'}); this.toast('저장했습니다 · 백업 검증 완료'); }
+    };
+    return f;
+  }
+
+  fxVM(){
+    const st = this.state, k = st.fxKey || 0, on = st.fxToggle===undefined ? true : st.fxToggle;
+    const play = (id)=>()=>{ this.setState({fxPlay:null}); setTimeout(()=>this.setState({fxPlay:id}),20); };
+    const stage = (id, inner, anim)=>{
+      const active = st.fxPlay===id;
+      return 'position:absolute;'+inner+(active?'animation:'+anim+';':'');
+    };
+    return {
+      ripple:()=>{ this.setState({fxRipple:false}); setTimeout(()=>this.setState({fxRipple:true}),20); setTimeout(()=>this.setState({fxRipple:false}),460); },
+      rippleOn: !!st.fxRipple,
+      flip:()=>this.setState({fxToggle:!on}),
+      toggleStyle:'width:50px;height:30px;border-radius:15px;flex:none;padding:3px;display:flex;justify-content:'+(on?'flex-end':'flex-start')+';background:'+(on?'var(--accent,#2f5d4f)':'var(--line,#e3dfd6)')+';transition:background 180ms ease;',
+      motions:[
+        {id:'sheet', name:'바텀시트 열림', spec:'translateY 100% → 0 · 260ms · cubic-bezier(0.05,0.7,0.1,1) · 배경 딤 동시 페이드',
+         stageText:'날짜 상세 시트',
+         stageStyle: stage('sheet','left:12px;right:12px;bottom:0;height:64px;border-radius:12px 12px 0 0;background:var(--surface,#fff);border:1px solid var(--line,#e3dfd6);border-bottom:none;display:flex;align-items:center;justify-content:center;font-size:calc(13px * var(--s,1));color:var(--ink2,#5c584f);','bcSlideUp 260ms cubic-bezier(0.05,0.7,0.1,1)')},
+        {id:'month', name:'월 이동 (shared axis X)', spec:'다음 달 220ms 우→좌 · 이전 달 좌→우 · 헤더 숫자는 함께 이동',
+         stageText:'2026년 8월',
+         stageStyle: stage('month','inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(19px * var(--s,1));font-weight:700;color:var(--ink,#1b1a17);font-feature-settings:"tnum";','bcAxisIn 220ms ease-out')},
+        {id:'screen', name:'화면 진입 (근거 화면)', spec:'페이드 180ms + 12px 상승 · 뒤로가기는 역방향',
+         stageText:'왜 이 날짜인가요?',
+         stageStyle: stage('screen','inset:0;display:flex;align-items:center;justify-content:center;font-size:calc(17px * var(--s,1));font-weight:700;color:var(--accent,#2f5d4f);','bcFadeIn 180ms ease-out')},
+        {id:'toast', name:'안내 메시지', spec:'14px 상승 + 페이드 160ms · 2.2초 유지 · 페이드 아웃 160ms',
+         stageText:'저장했습니다 · 백업 검증 완료',
+         stageStyle: stage('toast','left:12px;right:12px;bottom:14px;padding:12px 14px;border-radius:11px;background:rgba(27,26,23,0.92);color:#f5f3ee;font-size:calc(13px * var(--s,1));','bcToastIn 160ms ease-out')}
+      ].map(m=>Object.assign(m,{play:play(m.id), stageStyle:m.stageStyle+'', key:m.id+k}))
+    };
+  }
+
+  formVM(){
+    const st = this.state, fm = st.form;
+    const solar = fmtK(fm.date), lunar = lunarLong(fm.date);
+    return {
+      title:fm.title, memo:fm.memo,
+      solarTab:TAB(fm.mode==='solar'), lunarTab:TAB(fm.mode==='lunar'),
+      pickSolar:()=>this.setState({form:Object.assign({},fm,{mode:'solar'})}),
+      pickLunar:()=>this.setState({form:Object.assign({},fm,{mode:'lunar'})}),
+      primary: fm.mode==='solar' ? solar : lunar,
+      mirror: fm.mode==='solar' ? lunar : solar,
+      dateChips:[
+        {label:'2026-07-25', d:'2026-07-25', leap:false},
+        {label:'윤달 예시 · 윤 6.8', d:'2025-08-01', leap:true}
+      ].map(c=>({label:c.label, style:PILL(fm.date===c.d), on:()=>this.setState({form:Object.assign({},fm,{date:c.d,leap:c.leap})})})),
+      multiBox: fm.multi?'☑':'☐',
+      multiStyle:'display:flex;align-items:center;gap:9px;margin-top:10px;min-height:44px;font-size:calc(15px * var(--s,1));color:var(--ink,#1b1a17);',
+      toggleMulti:()=>this.setState({form:Object.assign({},fm,{multi:!fm.multi})}),
+      repeats:['안 함','매년(음력)','매년(양력)','매월','매주','매월 N째 O요일','매일'].map(r=>({
+        label:r, style:PILL(fm.repeat===r), on:()=>this.setState({form:Object.assign({},fm,{repeat:r})})
+      })),
+      leapVisible: fm.repeat==='매년(음력)' && fm.leap,
+      leapPolicy: fm.policy,
+      openLeap:()=>this.setState({dialog:'leap'}),
+      alarms:[[0,'당일'],[1,'1일 전'],[3,'3일 전'],[7,'7일 전'],[14,'14일 전']].map(a=>({
+        label:a[1], box:fm.alarms[a[0]]?'☑':'☐', style:PILL(!!fm.alarms[a[0]]),
+        on:()=>{ const al = Object.assign({},fm.alarms); al[a[0]] = !al[a[0]]; this.setState({form:Object.assign({},fm,{alarms:al})}); }
+      })),
+      colors:PAL.map((c,i)=>({
+        mark:fm.color===i?'✓':'', on:()=>this.setState({form:Object.assign({},fm,{color:i})}),
+        style:'width:48px;height:48px;border-radius:24px;background:'+c+';color:#fff;font-size:calc(16px * var(--s,1));font-weight:700;display:flex;align-items:center;justify-content:center;'+(fm.color===i?'box-shadow:0 0 0 3px var(--surface,#fff),0 0 0 5px '+c+';':'')
+      }))
+    };
+  }
+
+  convVM(){
+    const st = this.state;
+    const mode = st.convMode || 's2l';
+    const y = st.cy===undefined?2026:st.cy, m = st.cm===undefined?7:st.cm, d = st.cd===undefined?15:st.cd;
+    const out = y<1900 || y>2050;
+    const ds0 = y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const known = y>=2025 && y<=2027;
+    let result, sub, hasSub = true;
+    if (out){ result = '제공 범위(1900~2050)를 벗어났습니다'; sub = '추정치를 표시하지 않습니다.'; }
+    else if (!known){ result = '이 목업에는 '+y+'년 데이터가 없습니다'; sub = '실제 앱은 1900~2050 확정값을 내장합니다.'; }
+    else if (mode==='s2l'){ result = fmtK(ds0)+' → '+lunarLong(ds0); sub = monthGanji(ds0)+'월 '+ganji(ds0)+'일 · '+(sonEomneun(ds0)?'손없는날':'손없는날 아님'); }
+    else {
+      let hit = null;
+      for (let i=0;i<LM.length-1;i++){ if (LM[i][1]===m && !LM[i][2] && Number(LM[i][0].slice(0,4))>=y){ hit = ds(dn(LM[i][0])+d-1); break; } }
+      result = hit ? ('음력 '+m+'월 '+d+'일 → '+fmtK(hit)) : '해당 음력 날짜가 없습니다';
+      sub = hit ? (monthGanji(hit)+'월 '+ganji(hit)+'일') : '음력 달의 마지막 날을 확인해 주세요.';
+    }
+    const set = (k,v,lo,hi)=>()=>{ const o = {}; o[k] = Math.max(lo, Math.min(hi, v)); this.setState(o); };
+    return {
+      tabS2L:TAB(mode==='s2l'), tabL2S:TAB(mode==='l2s'),
+      pickS2L:()=>this.setState({convMode:'s2l'}), pickL2S:()=>this.setState({convMode:'l2s'}),
+      fields:[
+        {label:'년', value:y, dec:set('cy',y-1,1890,2060), inc:set('cy',y+1,1890,2060)},
+        {label:'월', value:m, dec:set('cm',m-1,1,12), inc:set('cm',m+1,1,12)},
+        {label:'일', value:d, dec:set('cd',d-1,1,30), inc:set('cd',d+1,1,30)}
+      ],
+      result:result, sub:sub, hasSub:hasSub,
+      resultStyle:'margin-top:18px;padding:16px;border-radius:12px;border:1px solid '+(out?'var(--red,#c0362c)':'var(--line,#e3dfd6)')+';background:'+(out?'var(--redSoft,#fbeceb)':'var(--surface,#fff)')+';'
+    };
+  }
+
+  searchVM(){
+    const q = this.state.search.trim();
+    const hits = q ? EV.filter(e=>e.t.indexOf(q)>=0 || (e.sub||'').indexOf(q)>=0).concat(
+      PEOPLE.filter(p=>p.name.indexOf(q)>=0).map(p=>({t:p.name+' '+p.kind, d:p.next, sub:p.lunar, c:p.c}))
+    ) : [];
+    return {
+      q:this.state.search,
+      set:(e)=>this.setState({search:e.target.value}),
+      chips:['아버님','기일','계모임','제사'].map(c=>({label:c, on:()=>this.setState({search:c})})),
+      empty: !q || hits.length===0,
+      emptyText: !q ? '제목 · 메모 · 사람 이름으로 찾습니다. 검색은 영구 무료입니다.' : "'"+q+"' 결과가 없습니다",
+      results: hits.map(h=>({
+        title:h.t, sub: fmtK(h.d)+' · '+lunarShort(h.d),
+        stripe:'width:6px;height:38px;border-radius:3px;background:'+PAL[h.c]+';flex:none;',
+        on:()=>this.setState({screen:'S1', sel:h.d, sheet:true, y:Number(h.d.slice(0,4)), m:Number(h.d.slice(5,7))})
+      }))
+    };
+  }
+
+  wizVM(){
+    const st = this.state, s = st.wizard;
+    const labels = ['소스','열 매핑','미리보기','중복 처리'];
+    const meta = {
+      1:{title:'어디서 가져올까요?', desc:'기기 캘린더에서 바로 가져오는 것이 가장 빠릅니다.', options:[['기기 캘린더 1회 가져오기','권한 1회 · 이후 동기화 없음'],['자체 CSV 파일','바른달력에서 내보낸 파일'],['범용 붙여넣기','엑셀·메모에서 복사한 표']]},
+      2:{title:'열을 맞춰 주세요', desc:'첫 줄을 머리글로 읽었습니다.', options:[['날짜 → A열','2026-07-25'],['제목 → B열','할머니 제사'],['음/양력 → C열','음력'],['반복 → D열','매년']]},
+      3:{title:'이렇게 들어갑니다', desc:'앞 20행을 미리 보여드립니다. 총 132행 중 128행이 유효합니다.', options:[]},
+      4:{title:'같은 날 같은 제목이 있으면?', desc:'겹치는 항목 4건을 찾았습니다.', options:[['건너뛰기','기존 일정을 그대로 둡니다'],['덮어쓰기','가져온 값으로 바꿉니다 · 4건 변경'],['모두 추가','중복을 허용하고 4건 추가']]}
+    }[s];
+    return {
+      steps: labels.map((l,i)=>({
+        label:l,
+        barStyle:'height:4px;border-radius:2px;background:'+(i<s?'var(--accent,#2f5d4f)':'var(--line,#e3dfd6)')+';',
+        labelStyle:'font-size:calc(11px * var(--s,1));margin-top:6px;text-align:center;color:'+(i<s?'var(--accent,#2f5d4f)':'var(--ink3,#8f8a80)')+';font-weight:'+(i===s-1?'700':'400')+';'
+      })),
+      title:meta.title, desc:meta.desc,
+      options: meta.options.map((o,i)=>({label:o[0], sub:o[1], style:'display:flex;align-items:center;padding:14px;border-radius:12px;border:'+(i===st.wizSource&&s===1?'2px solid var(--accent,#2f5d4f)':'1px solid var(--line,#e3dfd6)')+';background:'+(i===st.wizSource&&s===1?'var(--accentSoft,#e8efea)':'var(--surface,#fff)')+';', on:()=>this.setState({wizSource:i})})),
+      hasPreview: s===3,
+      rows: [['07-25','할머니 제사 (큰집에서)','음력'],['08-14','말복 모임','양력'],['09-25','추석 · 큰집','양력'],['11-15','아버님 기일','음력'],['12-31','송년회','양력']].map((r,i)=>({
+        date:r[0], title:r[1], tag:r[2],
+        style:'display:flex;align-items:center;gap:10px;padding:11px 12px;font-size:calc(13px * var(--s,1));color:var(--ink,#1b1a17);'+(i<4?'border-bottom:1px solid var(--line,#e3dfd6);':'')
+      })),
+      nextLabel: s===4?'가져오기 실행':'다음',
+      prev:()=>this.setState({wizard:Math.max(1,s-1)}),
+      next:()=>{ if (s===4){ this.setState({screen:'S1',wizard:1}); this.toast('128건 추가 · 4건 건너뜀 · 백업 검증 완료'); } else this.setState({wizard:s+1}); }
+    };
+  }
+
+  renderVals(){
+    const st = this.state;
+    const ON = {lunar:1,jeolgi:1,japjeol:1,holiday:1,anniv:1,event:1,son:1,ganji:1};
+    const OFF = {lunar:0,jeolgi:0,japjeol:0,holiday:0,anniv:0,event:0,son:0,ganji:0};
+    const frames = st.view==='single'
+      ? [this.makeFrame({live:true, theme:st.theme, scale:st.scale, screen:st.screen, toggles:st.toggles, outOfRange:st.outOfRange})]
+      : [
+        this.makeFrame({label:'S1 홈 · 라이트 · 배율 1.0', screen:'S1', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'S1 홈 · 다크', screen:'S1', theme:'dark', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'S1 홈 · 배율 1.5 (음력→배지 순 절삭)', screen:'S1', theme:'light', scale:1.5, toggles:st.toggles}),
+        this.makeFrame({label:'S1 홈 · 표시항목 전부 켬', screen:'S1', theme:'light', scale:1, toggles:ON}),
+        this.makeFrame({label:'S1 홈 · 표시항목 전부 끔', screen:'S1', theme:'light', scale:1, toggles:OFF}),
+        this.makeFrame({label:'S2 날짜 상세 시트', screen:'S1', theme:'light', scale:1, toggles:st.toggles, sheet:true}),
+        this.makeFrame({label:'S3 근거 · 초복', screen:'S3', theme:'light', scale:1, toggles:st.toggles, reason:'2026-07-15'}),
+        this.makeFrame({label:'S3 근거 · 대체공휴일 (다크)', screen:'S3', theme:'dark', scale:1, toggles:st.toggles, reason:'2026-08-17'}),
+        this.makeFrame({label:'S5 기일 · 생신', screen:'S5', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'S4 일정 편집', screen:'S4', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'S8 설정', screen:'S8', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'S11 페이월', screen:'S11', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'E5 범위 밖', screen:'S1', theme:'light', scale:1, toggles:st.toggles, outOfRange:true}),
+        this.makeFrame({label:'위젯 W1~W3', screen:'W', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'앱 아이콘', screen:'ICON', theme:'light', scale:1, toggles:st.toggles}),
+        this.makeFrame({label:'인터랙션 · 모션', screen:'FX', theme:'light', scale:1, toggles:st.toggles})
+      ];
+    const chromeGroups = [
+      {label:'보기', items:[['단일','single'],['나란히','gallery']].map(v=>({label:v[0], style:SEG(st.view===v[1]), on:()=>this.setState({view:v[1]})}))},
+      {label:'화면', items:[['홈','S1'],['근거','S3'],['편집','S4'],['기일','S5'],['변환','S6'],['검색','S7'],['설정','S8'],['백업','S9'],['가져오기','S10'],['페이월','S11'],['위젯','W'],['아이콘','ICON'],['인터랙션','FX']].map(v=>({label:v[0], style:SEG(st.screen===v[1]&&st.view==='single'), on:()=>this.setState({screen:v[1], view:'single', sheet:false})}))},
+      {label:'배율', items:[1,1.25,1.5].map(v=>({label:String(v), style:SEG(st.scale===v), on:()=>this.setState({scale:v})}))},
+      {label:'테마', items:[['라이트','light'],['다크','dark']].map(v=>({label:v[0], style:SEG(st.theme===v[1]), on:()=>this.setState({theme:v[1]})}))},
+      {label:'표시항목', items:[['전부 켬',1],['기본',0],['전부 끔',-1]].map(v=>({label:v[0], style:SEG(false), on:()=>this.setState({toggles: v[1]===1?ON:(v[1]===-1?OFF:{lunar:1,jeolgi:1,japjeol:1,holiday:1,anniv:1,event:1,son:0,ganji:0})})}))},
+      {label:'상태', items:[['백업 OK','ok'],['검증 대기','wait'],['불일치','bad']].map(v=>({label:v[0], style:SEG(st.badge===v[1]), on:()=>this.setState({badge:v[1], view:'single', screen:'S1'})}))},
+      {label:'예외', items:[{label:'범위 밖 E5', style:SEG(st.outOfRange), on:()=>this.setState({outOfRange:!st.outOfRange, view:'single', screen:'S1'})}]}
+    ];
+    const wk = ['2026-07-12','2026-07-13','2026-07-14','2026-07-15','2026-07-16','2026-07-17','2026-07-18'];
+    const ico = (px)=>({
+      label:px+'px',
+      box:'width:'+px+'px;height:'+px+'px;border-radius:'+Math.round(px*0.224)+'px;background:#f4f0e4;position:relative;overflow:hidden;',
+      band:'position:absolute;left:0;top:0;right:0;height:29.2%;background:#2f5d4f;',
+      ring1:'position:absolute;left:26%;top:-6%;width:9.4%;height:19%;border-radius:'+(px*0.047)+'px;background:#f4f0e4;',
+      ring2:'position:absolute;left:64.6%;top:-6%;width:9.4%;height:19%;border-radius:'+(px*0.047)+'px;background:#f4f0e4;',
+      moon:'position:absolute;left:68.8%;top:40.6%;width:22.9%;height:22.9%;border-radius:50%;background:#2f5d4f;',
+      bite:'position:absolute;left:75.5%;top:35.9%;width:22.9%;height:22.9%;border-radius:50%;background:#f4f0e4;',
+      num:'position:absolute;left:4.2%;right:30.2%;top:29.2%;bottom:0;display:flex;align-items:center;justify-content:center;font-size:'+Math.round(px*0.417)+'px;font-weight:700;color:#2f5d4f;letter-spacing:-0.05em;line-height:1;font-feature-settings:"tnum";'
+    });
+    return {
+      frames: frames, chromeGroups: chromeGroups,
+      iconSizes: [96,72,48,36].map(ico),
+      iconSpecs: [
+        {k:'바탕(낱장)', v:'#f4f0e4'},
+        {k:'머리띠', v:'#2f5d4f · 전폭 · 높이 29.2%'},
+        {k:'고리 2개', v:'#f4f0e4 · 9.4×19% · 좌 26% / 64.6% · 상 -6% (위쪽 잘림)'},
+        {k:'날짜 숫자', v:'15 · #2f5d4f · 700 · 폭의 41.7% · 자간 -0.05em · tnum'},
+        {k:'달', v:'#2f5d4f · 지름 22.9% · 좌 68.8% 상 40.6%'},
+        {k:'깎임 원', v:'바탕색 동일 · 같은 지름 · 우로 6.7% 위로 4.7% 이동'},
+        {k:'라운드 반경', v:'폭의 22.4% (Android 적응형 마스크가 덮어씀)'},
+        {k:'내보내기', v:'512×512 PNG · 적응형 fg/bg XML · 단색 테마 아이콘 · iOS 1024 무투명'}
+      ],
+      skeletons: [
+        'height:16px;width:70%;border-radius:6px;background:linear-gradient(90deg,var(--surface2,#faf9f6),var(--line,#e3dfd6),var(--surface2,#faf9f6));background-size:220px 100%;animation:bcShimmer 1.2s linear infinite;',
+        'height:16px;width:92%;border-radius:6px;background:linear-gradient(90deg,var(--surface2,#faf9f6),var(--line,#e3dfd6),var(--surface2,#faf9f6));background-size:220px 100%;animation:bcShimmer 1.2s linear infinite;animation-delay:0.15s;',
+        'height:16px;width:48%;border-radius:6px;background:linear-gradient(90deg,var(--surface2,#faf9f6),var(--line,#e3dfd6),var(--surface2,#faf9f6));background-size:220px 100%;animation:bcShimmer 1.2s linear infinite;animation-delay:0.3s;'
+      ].map(s=>({style:s})),
+      haptics: [
+        {k:'날짜 롱프레스', v:'짧게 1회 (근거 화면 진입 직전)'},
+        {k:'저장 · 가져오기 완료', v:'짧게 1회'},
+        {k:'백업 불일치 · 삭제 확인', v:'두 번 (경고 패턴)'},
+        {k:'그 외 탭', v:'진동 없음 — 달력을 넘기는 동작에 진동을 붙이지 않는다'}
+      ],
+      benefits: [{label:'광고 제거'},{label:'큰 글씨 3단계'},{label:'다단 사전 알림 (D-14까지)'},{label:'다크모드 + 위젯 테마'}],
+      widgetWeek: wk.map(s=>{
+        const evs = eventsOf(s);
+        const t = s===TODAY, d0 = dow(s);
+        return {
+          day:Number(s.slice(8,10)), lunar:lunarShort(s).replace('음 ',''),
+          style:'text-align:center;padding:5px 2px 4px;border-radius:8px;'+(t?'background:var(--accentSoft,#e8efea);box-shadow:inset 0 0 0 2px var(--accent,#2f5d4f);':''),
+          numStyle:'font-size:16px;font-weight:'+(t?'700':'500')+';font-feature-settings:"tnum";color:'+(d0===0||HOL[s]?'var(--red,#c0362c)':(d0===6?'var(--blue,#27508f)':'var(--ink,#1b1a17)'))+';',
+          dotStyle:'height:4px;border-radius:2px;margin-top:5px;background:'+(evs.length?PAL[evs[0].c]:'transparent')+';'
+        };
+      })
+    };
+  }
+}
+
+</script>
+</body>
+</html>
