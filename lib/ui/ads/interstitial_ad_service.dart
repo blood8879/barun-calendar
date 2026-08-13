@@ -17,7 +17,7 @@ String get _testInterstitialAdUnitId => Platform.isIOS
 /// 전면 광고 단위를 새로 만들고 이 값을 실제 ID로 교체해야 한다. 그 전까지
 /// 릴리즈 빌드에서도 노출되지 않도록 [InterstitialAdService.isConfigured]가
 /// 이 플레이스홀더 여부를 확인해 광고 로드 자체를 시도하지 않는다.
-const String _releaseInterstitialAdUnitId = 'REPLACE_WITH_REAL_INTERSTITIAL_AD_UNIT_ID';
+const String _releaseInterstitialAdUnitId = 'ca-app-pub-6861868748362641/9610886381';
 
 String get _interstitialAdUnitId =>
     kReleaseMode ? _releaseInterstitialAdUnitId : _testInterstitialAdUnitId;
