@@ -98,8 +98,8 @@ Play Console 등록 시 담당자가 확정.
 > 최종 확인해야 한다.
 
 ## 개인정보처리방침 URL
-`https://<github-username>.github.io/<repo>/privacy-policy.html`
-(→ `docs/privacy-policy.html`, 실제 GitHub 저장소 생성 및 Pages 활성화 후 확정 필요 — OPEN_QUESTIONS.md 참고)
+`https://blood8879.github.io/barun-calendar/privacy-policy.html`
+(GitHub Pages 배포 완료)
 
 ## 연락처 이메일
 seolasoft@gmail.com
