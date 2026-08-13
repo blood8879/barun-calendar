@@ -300,3 +300,19 @@ showGanji/showLunar/showSolarTerm/showHoliday 토글을 홈 캘린더 렌더링�
 - 시스템 알림 권한 요청 다이얼로그와 온보딩 오버레이가 동시에 뜨는 경우가 있음(둘 다 앱 시작
   직후 트리거되는 별개 오버레이라 겹칠 수 있음). 사용자 경험상 알림 권한 요청을 온보딩 완료
   이후로 늦추는 게 나을지 판단 필요.
+
+## 전면 광고(interstitial) 관련 후속 확인 필요 (2026-08-13)
+
+1. **[출시 전 필수] 실제 전면 광고 단위 ID 생성 필요**: AdMob 콘솔(seolasoft@gmail.com, 바른달력
+   앱)에서 배너와 같은 방식으로 전면 광고 단위를 새로 만들고, 그 ID로
+   `lib/ui/ads/interstitial_ad_service.dart`의 `_releaseInterstitialAdUnitId` 상수
+   (`'REPLACE_WITH_REAL_INTERSTITIAL_AD_UNIT_ID'`)를 교체해야 한다. 교체 전까지는
+   `isConfigured` 안전장치 덕분에 릴리즈 빌드에서도 전면광고가 로드/노출되지 않는다(크래시나
+   오작동은 없음, 그냥 안 뜰 뿐).
+2. **쿨다운(5분)/일일 상한(3회)/신규유저 유예(2회) 기본값은 초안**: 실제 배포 후 사용자 리뷰나
+   이탈률을 보고 조정이 필요할 수 있다. 값은 모두 `lib/domain/ads/interstitial_ad_policy.dart`
+   상단 상수(`cooldown`, `dailyCap`, `graceSaves`)로 분리해뒀으니 숫자만 바꾸면 된다.
+3. **UMP(사용자 메시지 플랫폼) 동의 처리가 배너/전면광고 모두 미구현 상태**: EU/EEA 등 규제
+   지역 사용자에게 개인 맞춤 광고 동의를 받는 절차가 아직 없다. 실제 스토어 심사/운영 전에
+   `google_mobile_ads`의 UMP SDK 연동이 필요할 수 있음(AdMob 정책 준수 관점에서 별도 검토
+   필요).

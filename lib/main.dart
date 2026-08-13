@@ -9,6 +9,7 @@ import 'data/settings/settings_repository.dart';
 import 'data/widget/widget_data_sync.dart';
 import 'domain/calendar/day_info.dart';
 import 'domain/calendar/solar_term_calculator.dart';
+import 'ui/ads/interstitial_ad_service.dart';
 import 'ui/home/home_screen.dart';
 
 /// KASI 특일 API(SpcdeInfoService)의 24절기 자체 제공 범위. 이 범위 밖은
@@ -21,6 +22,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   NotificationService.instance.init();
   MobileAds.instance.initialize();
+  InterstitialAdService.instance.warmUp();
   PurchaseService.instance.listenForPurchases();
   runApp(const BarunCalendarApp());
 }

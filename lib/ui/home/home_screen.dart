@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,6 +12,7 @@ import '../../domain/calendar/day_info.dart';
 import '../../domain/calendar/jdn.dart';
 import '../../domain/event/event.dart';
 import '../ads/ad_banner.dart';
+import '../ads/interstitial_ad_service.dart';
 import '../anniversary/anniversary_screen.dart';
 import '../basis/basis_screen.dart';
 import '../converter/converter_screen.dart';
@@ -170,6 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await NotificationService.instance
               .rescheduleForEvent(event, lunarSource: widget.lunarSource);
           await _loadEvents();
+          unawaited(InterstitialAdService.instance.onEventSaved());
           return event;
         },
         onUpdateEvent: (event) async {
@@ -177,6 +181,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await NotificationService.instance
               .rescheduleForEvent(event, lunarSource: widget.lunarSource);
           await _loadEvents();
+          unawaited(InterstitialAdService.instance.onEventSaved());
         },
         onDeleteEvent: (id) async {
           final event = _events.where((e) => e.id == id).firstOrNull;

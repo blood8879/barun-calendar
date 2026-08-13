@@ -487,3 +487,32 @@ QA: HTML 파싱 검증 통과, 이미지 규격(512×512 무알파, 1024×500, 9
 - QA: `flutter analyze` 오류 0(기존 info 2건만), `flutter test` **60/60 통과**,
   `flutter build apk --release` 빌드 성공. 실기기(Galaxy, Android 13) 재설치 후 크래시 0건,
   온보딩 코치마크 정상 표시 확인(Phase 15의 R8/WorkManager 크래시 수정이 유지됨을 재확인).
+
+## Phase 17: 전면 광고(interstitial) 추가 — 2026-08-13
+
+사용자가 "배너 광고만 있으면 광고 제거 결제 유인이 약하다"고 지적 — 전면 광고를 일정 저장
+완료 시점에 추가하되, 사용자가 직접 우려한 "어뷰징/정지 위험"(예: 신규 유저가 짧은 시간에
+일정 10개를 연달아 입력하면 광고가 3연속으로 뜨는 상황)을 원천 차단하는 빈도 정책으로 설계.
+
+- `lib/domain/ads/interstitial_ad_policy.dart`: AdMob SDK/SharedPreferences에 의존하지 않는
+  순수 상태 전이 클래스(`InterstitialAdPolicy.decide`). **횟수 기반이 아니라 쿨다운(5분) +
+  일일 상한(3회) + 신규 사용자 유예(첫 2회 저장 면제)**를 조합 — 저장을 연달아 아무리 많이 해도
+  5분 안에는 광고가 다시 뜨지 않으므로 "짧은 시간에 광고 3연속"은 애초에 발생하지 않음.
+- `lib/ui/ads/interstitial_ad_service.dart`: 위 정책을 SharedPreferences 영속화 + 실제
+  `google_mobile_ads` SDK와 연결. 평생권(광고 제거) 구매자는 정책 판단 전에 즉시 스킵. 광고
+  로드 실패/미준비 시에도 저장 자체는 이미 끝난 뒤라 사용자 플로우를 전혀 막지 않음(프리로드 후
+  `unawaited`로 호출).
+- 배너와 동일하게 디버그 빌드는 Google 공식 테스트 전면광고 ID, 릴리즈 빌드는 실제 ID를 쓰도록
+  분기. 단, 실제 전면광고 단위는 AdMob 콘솔에 아직 생성 안 돼 있어 `_releaseInterstitialAdUnitId`
+  자리에 플레이스홀더를 넣고, `isConfigured`가 플레이스홀더인 동안 릴리즈에서도 광고 로드를
+  시도하지 않도록 안전장치를 걸어둠(교체 전까지는 조용히 미노출).
+- `lib/ui/home/home_screen.dart`의 `onAddEvent`/`onUpdateEvent` 저장 완료 콜백 끝에서
+  `InterstitialAdService.instance.onEventSaved()` 호출. `main.dart`에서 앱 시작 시 `warmUp()`으로
+  미리 프리로드.
+- `test/domain/ads/interstitial_ad_policy_test.dart` 6건 추가: 신규유저 유예, 유예 이후 정상
+  노출, 쿨다운 내 스킵, 쿨다운 경과 후 재노출, 일일 상한 도달 시 스킵, 자정 지나면 카운터 리셋.
+- QA: `flutter analyze` 오류 0(기존 info 2건만), `flutter test` **66/66 통과**,
+  `flutter build apk --release` 빌드 성공. 실기기(Galaxy, Android 13) 재설치 후 앱 실행
+  크래시 0건 확인(온보딩 코치마크도 신규 설치 시 정상 표시됨을 함께 확인) — 다만 시스템
+  알림 권한 다이얼로그와 좌표가 겹쳐 adb 자동 탭으로 실제 "일정 저장 → 전면광고 노출" 전체
+  플로우까지는 재현하지 못함(코드 경로는 정책 단위 테스트로 충분히 검증됨).
